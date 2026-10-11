@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mapas de Ciencias 6.º</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: portada sobre el mismo papel punteado de los mapas; ruta numerada arriba y tarjetas por bloque */
+:root{
+  --bg:#eef4f6; --board:#f8fbfc; --dot:#cfdde3; --sheet:#ffffff; --ink:#1c2a31; --muted:#586b74; --line:#d3e0e5;
+  --blue:#2b8a4f; --green:#2b8a4f; --orange:#d2641b; --teal:#11808a; --purple:#6a46b6; --red:#c42a3c; --gold:#e3a51a;
+  --b1:var(--blue); --b2:var(--orange); --tint:12%;
+  --display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible",Verdana,system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e171c; --board:#111d23; --dot:#23343c; --sheet:#182730; --ink:#e5eef2; --muted:#9db1ba; --line:#2a3d46;
+  --blue:#6dc78f; --green:#6dc78f; --orange:#f09a5c; --teal:#5dc5ce; --purple:#b49ef0; --red:#f07482; --gold:#f2c552;
+  --tint:20%; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e171c; --board:#111d23; --dot:#23343c; --sheet:#182730; --ink:#e5eef2; --muted:#9db1ba; --line:#2a3d46;
+  --blue:#6dc78f; --green:#6dc78f; --orange:#f09a5c; --teal:#5dc5ce; --purple:#b49ef0; --red:#f07482; --gold:#f2c552;
+  --tint:20%; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background-color:var(--board);background-image:radial-gradient(var(--dot) 1.3px,transparent 1.4px);background-size:22px 22px;color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.1;text-wrap:balance}
+p{margin:0}
+a{color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:32px 56px;display:grid;gap:36px}
+
+header.hero{display:grid;gap:12px;max-width:760px}
+.eyebrow{font-family:var(--display);font-weight:700;font-size:.82rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.hero h1{font-size:clamp(2rem,5.5vw,3.3rem);font-weight:800;color:var(--ink)}
+.hero h1 em{font-style:normal;color:var(--blue)}
+.hero p{font-size:1.08rem;color:var(--muted);max-width:62ch}
+.how{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px;padding:0;list-style:none;counter-reset:s}
+.how li{display:flex;align-items:center;gap:8px;background:var(--sheet);border:1.5px solid var(--line);border-radius:999px;padding:5px 14px 5px 6px;font-size:.92rem;counter-increment:s}
+.how li::before{content:counter(s);width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--blue);color:var(--sheet);font-family:var(--display);font-weight:700;font-size:.85rem}
+
+/* Ruta */
+.route{background:var(--sheet);border:1.5px solid var(--line);border-radius:20px;padding:18px 20px;display:grid;gap:12px}
+.route-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px}
+.route-head h2{font-size:1.3rem}
+.route-head span{font-family:var(--display);font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.stops{display:flex;flex-wrap:wrap;gap:6px 0;align-items:center;padding:0;margin:0;list-style:none}
+.stops li{display:flex;align-items:center}
+.stops li:not(:last-child)::after{content:"";width:18px;height:3px;background:var(--line);border-radius:2px}
+.stops li.done:not(:last-child)::after{background:var(--c)}
+.stops li.gap::after{width:30px;background:repeating-linear-gradient(90deg,var(--line) 0 5px,transparent 5px 9px)}
+.stop{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:.95rem;text-decoration:none;color:var(--c);border:2.5px solid var(--c);background:var(--sheet);font-variant-numeric:tabular-nums;transition:transform .15s}
+.stop:hover{transform:scale(1.08)}
+.stop:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+li.done .stop{background:var(--c);color:var(--sheet)}
+.bar{height:8px;border-radius:999px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--orange),var(--green),var(--purple));transition:width .4s}
+
+/* Bloques y tarjetas */
+section.block{display:grid;gap:16px}
+.block-head{display:grid;gap:4px;border-left:6px solid var(--c);padding-left:14px}
+.block-head h2{font-size:clamp(1.5rem,3.6vw,2rem);color:var(--c)}
+.block-head p{color:var(--muted)}
+.cards{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.card{background:var(--sheet);border:2px solid var(--line);border-radius:18px;padding:16px 18px 14px;display:grid;gap:10px;align-content:start;min-width:0;position:relative;scroll-margin-top:16px;transition:border-color .2s,box-shadow .2s}
+.card:hover{border-color:color-mix(in srgb,var(--c) 55%,var(--line))}
+.card.done{border-color:var(--c);background:color-mix(in srgb,var(--c) 6%,var(--sheet))}
+.card:target{box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 35%,transparent)}
+.card-top{display:flex;align-items:flex-start;gap:12px}
+.num{font-family:var(--display);font-weight:800;font-size:2.4rem;line-height:.9;color:var(--c);font-variant-numeric:tabular-nums;flex:none}
+.card-top div{display:grid;gap:2px;min-width:0}
+.card .tag{font-family:var(--display);font-weight:700;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.card h3{font-size:1.3rem}
+.idea{color:var(--muted);font-size:.93rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.chapters{display:flex;gap:4px}
+.chapters span{flex:1;height:6px;border-radius:3px;background:var(--k)}
+.facts{font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.actions{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.open{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-family:var(--display);font-weight:700;font-size:1.02rem;background:var(--c);color:var(--sheet);padding:7px 16px;border-radius:12px}
+.open:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.check{display:inline-flex;align-items:center;gap:7px;font-size:.9rem;color:var(--muted);cursor:pointer;user-select:none}
+.check input{width:18px;height:18px;accent-color:var(--c);cursor:pointer}
+
+.back{font-family:var(--display);font-weight:700;color:var(--blue);text-decoration:none;justify-self:start}
+.back:hover{text-decoration:underline}
+.note{background:var(--sheet);border:1.5px dashed var(--line);border-radius:16px;padding:14px 18px;color:var(--muted);font-size:.93rem;display:grid;gap:4px}
+.note b{font-family:var(--display);color:var(--ink);font-size:1.02rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <a class="back" id="back" hidden></a>
+    <span class="eyebrow" id="sub"></span>
+    <h1 id="h1"></h1>
+    <p id="lead"></p>
+    <ul class="how">
+      <li>Elija un tema en orden</li>
+      <li>Piense antes de descubrir cada pieza</li>
+      <li>Responda las preguntas tipo examen</li>
+      <li>Marque el tema como repasado</li>
+    </ul>
+  </header>
+
+  <nav class="route" aria-label="Ruta de repaso">
+    <div class="route-head"><h2>Su ruta</h2><span id="count"></span></div>
+    <ol class="stops" id="stops"></ol>
+    <div class="bar"><i id="bar"></i></div>
+  </nav>
+
+  <div id="blocks" style="display:grid;gap:36px"></div>
+
+  <div class="note" id="note"></div>
+</div>
+
+<script type="application/json" id="datos">{
+ "titulo": "Mapas para repasar <em>Ciencias<\/em>",
+ "subtitulo": "Prueba Nacional Estandarizada 2026 · Sexto año",
+ "descripcion": "Cada mapa arma un tema pieza por pieza: primero una pregunta para pensar, después la pieza y su conexión con la anterior, y al cerrar cada capítulo una pregunta tipo examen.",
+ "nota": "",
+ "volver": {
+  "texto": "Todas las materias",
+  "href": "../"
+ },
+ "nombresBloque": {
+  "Bloque 1": "Cuerpo humano",
+  "Bloque 2": "Biodiversidad",
+  "Bloque 3": "Energía",
+  "Bloque 4": "Geofísica"
+ },
+ "temas": [
+  {
+   "clave": "t01",
+   "titulo": "Niveles de organización del cuerpo humano",
+   "bloque": "Bloque 1",
+   "afirmacionCorta": "Afirmación 1",
+   "idea": "El cuerpo se organiza en niveles: las células forman tejidos, los tejidos forman órganos y los órganos forman sistemas. Todos los niveles trabajan juntos para mantener el equilibrio del cuerpo.",
+   "nodos": 15,
+   "capitulos": 5,
+   "preguntas": 4,
+   "oficiales": 0,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "red"
+   ],
+   "html": "t01-niveles-de-organizacion.html",
+   "url": ""
+  },
+  {
+   "clave": "t02",
+   "titulo": "Función inmunológica: las defensas del cuerpo",
+   "bloque": "Bloque 1",
+   "afirmacionCorta": "Afirmación 2",
+   "idea": "La función inmunológica defiende al cuerpo de virus, bacterias y otros agentes que enferman. La sangre participa con glóbulos blancos y plasma, y la inmunidad puede ser innata o adquirida.",
+   "nodos": 16,
+   "capitulos": 5,
+   "preguntas": 4,
+   "oficiales": 1,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "red"
+   ],
+   "html": "t02-funcion-inmunologica.html",
+   "url": ""
+  },
+  {
+   "clave": "t03",
+   "titulo": "Vacunas: protección que se aprende",
+   "bloque": "Bloque 1",
+   "afirmacionCorta": "Afirmación 3",
+   "idea": "Las vacunas enseñan a las defensas a reconocer enfermedades para protegernos mejor. Previenen enfermedades infectocontagiosas y benefician a quien se vacuna y a toda la comunidad.",
+   "nodos": 16,
+   "capitulos": 5,
+   "preguntas": 4,
+   "oficiales": 2,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "red"
+   ],
+   "html": "t03-vacunas.html",
+   "url": ""
+  },
+  {
+   "clave": "t04",
+   "titulo": "Órganos y sistemas del cuerpo humano",
+   "bloque": "Bloque 1",
+   "afirmacionCorta": "Afirmación 4",
+   "idea": "Un órgano realiza una función específica y un sistema es un conjunto de órganos que trabajan juntos. La salud de los sistemas depende de buenos hábitos y de acciones de la comunidad y las instituciones.",
+   "nodos": 17,
+   "capitulos": 5,
+   "preguntas": 5,
+   "oficiales": 5,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "red"
+   ],
+   "html": "t04-organos-y-sistemas.html",
+   "url": ""
+  },
+  {
+   "clave": "t05",
+   "titulo": "Cómo se relacionan los sistemas del cuerpo",
+   "bloque": "Bloque 1",
+   "afirmacionCorta": "Afirmación 5",
+   "idea": "Los sistemas no trabajan solos: dependen unos de otros. Cuando cooperan bien hay mejor salud integral, y cuando uno falla afecta a los demás.",
+   "nodos": 17,
+   "capitulos": 5,
+   "preguntas": 4,
+   "oficiales": 3,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "red"
+   ],
+   "html": "t05-interrelaciones.html",
+   "url": ""
+  },
+  {
+   "clave": "t06",
+   "titulo": "Biodiversidad: conceptos, adaptaciones y amenazas",
+   "bloque": "Bloque 2",
+   "afirmacionCorta": "Afirmación 1",
+   "idea": "La biodiversidad es la variedad de seres vivos, ecosistemas y relaciones de un lugar. Las adaptaciones y las funciones vitales ayudan a sobrevivir, y cuidarla es proteger la vida.",
+   "nodos": 17,
+   "capitulos": 5,
+   "preguntas": 5,
+   "oficiales": 3,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "red"
+   ],
+   "html": "t06-biodiversidad.html",
+   "url": ""
+  },
+  {
+   "clave": "t07",
+   "titulo": "Clasificación de los seres vivos",
+   "bloque": "Bloque 2",
+   "afirmacionCorta": "Afirmación 2",
+   "idea": "Los seres vivos se clasifican por sus características: número de células, columna vertebral, alimentación, respiración, reproducción, medio donde viven y reino biológico.",
+   "nodos": 16,
+   "capitulos": 5,
+   "preguntas": 5,
+   "oficiales": 5,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "red"
+   ],
+   "html": "t07-clasificacion-organismos.html",
+   "url": ""
+  },
+  {
+   "clave": "t08",
+   "titulo": "Relaciones de interdependencia entre seres vivos",
+   "bloque": "Bloque 2",
+   "afirmacionCorta": "Afirmación 3",
+   "idea": "Las relaciones entre seres vivos pueden darse entre la misma especie (intraespecíficas) o entre especies distintas (interespecíficas). Todas ayudan a mantener el equilibrio ecológico.",
+   "nodos": 15,
+   "capitulos": 5,
+   "preguntas": 4,
+   "oficiales": 3,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "red"
+   ],
+   "html": "t08-relaciones-de-interdependencia.html",
+   "url": ""
+  },
+  {
+   "clave": "t09",
+   "titulo": "Fotosíntesis y niveles de organización ecológica",
+   "bloque": "Bloque 2",
+   "afirmacionCorta": "Afirmación 4",
+   "idea": "En la fotosíntesis las plantas usan agua, dióxido de carbono y luz para producir glucosa y oxígeno. Esa energía pasa de los productores a los consumidores en las cadenas alimenticias del ecosistema.",
+   "nodos": 17,
+   "capitulos": 5,
+   "preguntas": 4,
+   "oficiales": 2,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "red"
+   ],
+   "html": "t09-fotosintesis-y-ecosistemas.html",
+   "url": ""
+  },
+  {
+   "clave": "t10",
+   "titulo": "Tipos y clases de energía",
+   "bloque": "Bloque 3",
+   "afirmacionCorta": "Afirmación 1",
+   "idea": "La energía mecánica puede ser cinética o potencial y se transforma de una a otra. Existen distintas clases de energía, que se clasifican en limpias y contaminantes y cambian de una forma a otra.",
+   "nodos": 16,
+   "capitulos": 5,
+   "preguntas": 5,
+   "oficiales": 4,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "red"
+   ],
+   "html": "t10-tipos-de-energia.html",
+   "url": ""
+  },
+  {
+   "clave": "t11",
+   "titulo": "Movimiento, rapidez y calor",
+   "bloque": "Bloque 3",
+   "afirmacionCorta": "Afirmación 2",
+   "idea": "El movimiento es cambiar de posición y la rapidez compara distancia y tiempo. El calor pasa de lo caliente a lo frío por conducción, convección o radiación.",
+   "nodos": 15,
+   "capitulos": 5,
+   "preguntas": 5,
+   "oficiales": 5,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "red"
+   ],
+   "html": "t11-movimiento-y-calor.html",
+   "url": ""
+  },
+  {
+   "clave": "t12",
+   "titulo": "La luz y el sonido",
+   "bloque": "Bloque 3",
+   "afirmacionCorta": "Afirmación 2",
+   "idea": "La luz permite ver, viaja en línea recta y puede reflejarse o desviarse. El sonido es una vibración que necesita un medio. La luz y el sonido tienen efectos positivos y negativos en los ambientes.",
+   "nodos": 16,
+   "capitulos": 5,
+   "preguntas": 4,
+   "oficiales": 2,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "red"
+   ],
+   "html": "t12-luz-y-sonido.html",
+   "url": ""
+  },
+  {
+   "clave": "t13",
+   "titulo": "Electricidad, circuitos y magnetismo",
+   "bloque": "Bloque 3",
+   "afirmacionCorta": "Afirmación 3",
+   "idea": "La electricidad es el movimiento de cargas eléctricas por un conductor. Los circuitos pueden ser en serie o en paralelo, y los imanes tienen polos que se atraen o se repelen.",
+   "nodos": 16,
+   "capitulos": 5,
+   "preguntas": 4,
+   "oficiales": 3,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "red"
+   ],
+   "html": "t13-electricidad-y-magnetismo.html",
+   "url": ""
+  },
+  {
+   "clave": "t14",
+   "titulo": "Estructura de la Tierra y agentes del relieve",
+   "bloque": "Bloque 4",
+   "afirmacionCorta": "Afirmación 1",
+   "idea": "La Tierra tiene tres capas: geosfera, atmósfera e hidrosfera, y juntas hacen posible la vida. Agentes internos y externos modelan el relieve, y el clima se diferencia del tiempo atmosférico.",
+   "nodos": 17,
+   "capitulos": 5,
+   "preguntas": 4,
+   "oficiales": 3,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "red"
+   ],
+   "html": "t14-estructura-de-la-tierra.html",
+   "url": ""
+  },
+  {
+   "clave": "t15",
+   "titulo": "Movimientos de la Tierra y la Luna",
+   "bloque": "Bloque 4",
+   "afirmacionCorta": "Afirmación 2",
+   "idea": "La Tierra y la Luna giran sobre su eje (rotación) y se mueven alrededor de otro cuerpo (traslación). De esos movimientos resultan el día y la noche, las estaciones, las fases, las mareas y los eclipses.",
+   "nodos": 18,
+   "capitulos": 5,
+   "preguntas": 4,
+   "oficiales": 3,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "red"
+   ],
+   "html": "t15-movimientos-tierra-luna.html",
+   "url": ""
+  },
+  {
+   "clave": "t16",
+   "titulo": "El Sistema Solar, el Universo y la exploración espacial",
+   "bloque": "Bloque 4",
+   "afirmacionCorta": "Afirmación 3",
+   "idea": "El Sol es una estrella en la galaxia Vía Láctea y ocho planetas giran a su alrededor. El Universo incluye galaxias, estrellas, nebulosas y cuerpos menores que se estudian con satélites, sondas y estaciones espaciales.",
+   "nodos": 17,
+   "capitulos": 5,
+   "preguntas": 4,
+   "oficiales": 2,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "red"
+   ],
+   "html": "t16-sistema-solar-y-universo.html",
+   "url": ""
+  }
+ ]
+}</script>
+<script>
+(() => {
+  const D = JSON.parse(document.getElementById("datos").textContent);
+  const local = location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+  const KEY = "portada-repasos-ciencias";
+  let done = {};
+  try { done = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { done = {}; }
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) { /* sin almacenamiento */ } };
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  document.getElementById("sub").textContent = D.subtitulo;
+  if (D.volver) { const b = document.getElementById("back"); b.href = D.volver.href; b.textContent = "← " + D.volver.texto; b.hidden = false; }
+  document.getElementById("h1").innerHTML = D.titulo;
+  document.getElementById("lead").textContent = D.descripcion;
+  document.getElementById("note").innerHTML = D.nota ? `<b>Fuera de esta ruta</b><span>${esc(D.nota)}</span>` : "";
+  if (!D.nota) document.getElementById("note").hidden = true;
+
+  const groups = [];
+  D.temas.forEach(t => {
+    let g = groups.find(x => x.bloque === t.bloque);
+    if (!g) groups.push(g = { bloque: t.bloque, temas: [] });
+    g.temas.push(t);
+  });
+  const blockColor = i => ["var(--blue)", "var(--orange)", "var(--teal)", "var(--purple)", "var(--green)", "var(--red)"][i % 6];
+  const hrefOf = t => (!local && t.url) ? t.url : t.html;
+
+  document.getElementById("blocks").innerHTML = groups.map((g, gi) => `
+    <section class="block" style="--c:${blockColor(gi)}">
+      <div class="block-head"><span class="eyebrow">${esc(g.bloque)}</span><h2>${esc(D.nombresBloque[g.bloque] || g.bloque)}</h2>
+        <p>${g.temas.length} mapas · ${g.temas.reduce((s, t) => s + t.nodos, 0)} piezas · ${g.temas.reduce((s, t) => s + t.preguntas, 0)} preguntas</p></div>
+      <div class="cards">${g.temas.map(t => `
+        <article class="card" id="${t.clave}">
+          <div class="card-top"><span class="num">${t.clave.slice(1)}</span>
+            <div><span class="tag">${esc(t.afirmacionCorta)}</span><h3>${esc(t.titulo)}</h3></div></div>
+          <div class="chapters" aria-hidden="true">${t.colores.map(c => `<span style="--k:var(--${c})"></span>`).join("")}</div>
+          <p class="idea">${esc(t.idea)}</p>
+          <p class="facts">${t.nodos} piezas · ${t.capitulos} capítulos · ${t.preguntas} preguntas (${t.oficiales} oficiales)</p>
+          <div class="actions">
+            <a class="open" href="${esc(hrefOf(t))}" ${!local && t.url ? 'target="_blank" rel="noopener"' : ""}>Abrir mapa →</a>
+            <label class="check"><input type="checkbox" id="chk-${t.clave}" data-k="${t.clave}"> Ya lo repasé</label>
+          </div>
+        </article>`).join("")}
+      </div>
+    </section>`).join("");
+
+  function paint() {
+    const total = D.temas.length, n = D.temas.filter(t => done[t.clave]).length;
+    document.getElementById("count").textContent = `${n} de ${total} repasados`;
+    document.getElementById("bar").style.width = (n / total * 100) + "%";
+    document.getElementById("stops").innerHTML = D.temas.map((t, i) => {
+      const gi = groups.findIndex(g => g.bloque === t.bloque);
+      const next = D.temas[i + 1];
+      const gap = next && next.bloque !== t.bloque;
+      return `<li class="${done[t.clave] ? "done" : ""} ${gap ? "gap" : ""}" style="--c:${blockColor(gi)}"><a class="stop" href="#${t.clave}" title="${esc(t.titulo)}">${t.clave.slice(1)}</a></li>`;
+    }).join("");
+    D.temas.forEach(t => {
+      document.getElementById(t.clave).classList.toggle("done", !!done[t.clave]);
+      document.getElementById("chk-" + t.clave).checked = !!done[t.clave];
+    });
+  }
+  document.querySelectorAll(".check input").forEach(cb => cb.addEventListener("change", () => {
+    done[cb.dataset.k] = cb.checked; save(); paint();
+  }));
+  paint();
+})();
+</script>
