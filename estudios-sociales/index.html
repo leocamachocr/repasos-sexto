@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mapas de Sociales 6.º</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: portada sobre el mismo papel punteado de los mapas; ruta numerada arriba y tarjetas por bloque */
+:root{
+  --bg:#eef4f6; --board:#f8fbfc; --dot:#cfdde3; --sheet:#ffffff; --ink:#1c2a31; --muted:#586b74; --line:#d3e0e5;
+  --blue:#1f56b0; --green:#2b8a4f; --orange:#d2641b; --teal:#11808a; --purple:#6a46b6; --red:#c42a3c; --gold:#e3a51a;
+  --b1:var(--blue); --b2:var(--orange); --tint:12%;
+  --display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible",Verdana,system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e171c; --board:#111d23; --dot:#23343c; --sheet:#182730; --ink:#e5eef2; --muted:#9db1ba; --line:#2a3d46;
+  --blue:#82a9f0; --green:#6dc78f; --orange:#f09a5c; --teal:#5dc5ce; --purple:#b49ef0; --red:#f07482; --gold:#f2c552;
+  --tint:20%; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e171c; --board:#111d23; --dot:#23343c; --sheet:#182730; --ink:#e5eef2; --muted:#9db1ba; --line:#2a3d46;
+  --blue:#82a9f0; --green:#6dc78f; --orange:#f09a5c; --teal:#5dc5ce; --purple:#b49ef0; --red:#f07482; --gold:#f2c552;
+  --tint:20%; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background-color:var(--board);background-image:radial-gradient(var(--dot) 1.3px,transparent 1.4px);background-size:22px 22px;color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.1;text-wrap:balance}
+p{margin:0}
+a{color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:32px 56px;display:grid;gap:36px}
+
+header.hero{display:grid;gap:12px;max-width:760px}
+.eyebrow{font-family:var(--display);font-weight:700;font-size:.82rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.hero h1{font-size:clamp(2rem,5.5vw,3.3rem);font-weight:800;color:var(--ink)}
+.hero h1 em{font-style:normal;color:var(--blue)}
+.hero p{font-size:1.08rem;color:var(--muted);max-width:62ch}
+.how{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px;padding:0;list-style:none;counter-reset:s}
+.how li{display:flex;align-items:center;gap:8px;background:var(--sheet);border:1.5px solid var(--line);border-radius:999px;padding:5px 14px 5px 6px;font-size:.92rem;counter-increment:s}
+.how li::before{content:counter(s);width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--blue);color:var(--sheet);font-family:var(--display);font-weight:700;font-size:.85rem}
+
+/* Ruta */
+.route{background:var(--sheet);border:1.5px solid var(--line);border-radius:20px;padding:18px 20px;display:grid;gap:12px}
+.route-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px}
+.route-head h2{font-size:1.3rem}
+.route-head span{font-family:var(--display);font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.stops{display:flex;flex-wrap:wrap;gap:6px 0;align-items:center;padding:0;margin:0;list-style:none}
+.stops li{display:flex;align-items:center}
+.stops li:not(:last-child)::after{content:"";width:18px;height:3px;background:var(--line);border-radius:2px}
+.stops li.done:not(:last-child)::after{background:var(--c)}
+.stops li.gap::after{width:30px;background:repeating-linear-gradient(90deg,var(--line) 0 5px,transparent 5px 9px)}
+.stop{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:.95rem;text-decoration:none;color:var(--c);border:2.5px solid var(--c);background:var(--sheet);font-variant-numeric:tabular-nums;transition:transform .15s}
+.stop:hover{transform:scale(1.08)}
+.stop:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+li.done .stop{background:var(--c);color:var(--sheet)}
+.bar{height:8px;border-radius:999px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--b1),var(--b2));transition:width .4s}
+
+/* Bloques y tarjetas */
+section.block{display:grid;gap:16px}
+.block-head{display:grid;gap:4px;border-left:6px solid var(--c);padding-left:14px}
+.block-head h2{font-size:clamp(1.5rem,3.6vw,2rem);color:var(--c)}
+.block-head p{color:var(--muted)}
+.cards{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.card{background:var(--sheet);border:2px solid var(--line);border-radius:18px;padding:16px 18px 14px;display:grid;gap:10px;align-content:start;min-width:0;position:relative;scroll-margin-top:16px;transition:border-color .2s,box-shadow .2s}
+.card:hover{border-color:color-mix(in srgb,var(--c) 55%,var(--line))}
+.card.done{border-color:var(--c);background:color-mix(in srgb,var(--c) 6%,var(--sheet))}
+.card:target{box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 35%,transparent)}
+.card-top{display:flex;align-items:flex-start;gap:12px}
+.num{font-family:var(--display);font-weight:800;font-size:2.4rem;line-height:.9;color:var(--c);font-variant-numeric:tabular-nums;flex:none}
+.card-top div{display:grid;gap:2px;min-width:0}
+.card .tag{font-family:var(--display);font-weight:700;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.card h3{font-size:1.3rem}
+.idea{color:var(--muted);font-size:.93rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.chapters{display:flex;gap:4px}
+.chapters span{flex:1;height:6px;border-radius:3px;background:var(--k)}
+.facts{font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.actions{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.open{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-family:var(--display);font-weight:700;font-size:1.02rem;background:var(--c);color:var(--sheet);padding:7px 16px;border-radius:12px}
+.open:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.check{display:inline-flex;align-items:center;gap:7px;font-size:.9rem;color:var(--muted);cursor:pointer;user-select:none}
+.check input{width:18px;height:18px;accent-color:var(--c);cursor:pointer}
+
+.back{font-family:var(--display);font-weight:700;color:var(--blue);text-decoration:none;justify-self:start}
+.back:hover{text-decoration:underline}
+.note{background:var(--sheet);border:1.5px dashed var(--line);border-radius:16px;padding:14px 18px;color:var(--muted);font-size:.93rem;display:grid;gap:4px}
+.note b{font-family:var(--display);color:var(--ink);font-size:1.02rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <a class="back" id="back" hidden></a>
+    <span class="eyebrow" id="sub"></span>
+    <h1 id="h1"></h1>
+    <p id="lead"></p>
+    <ul class="how">
+      <li>Elija un tema en orden</li>
+      <li>Piense antes de descubrir cada pieza</li>
+      <li>Responda las preguntas tipo examen</li>
+      <li>Marque el tema como repasado</li>
+    </ul>
+  </header>
+
+  <nav class="route" aria-label="Ruta de repaso">
+    <div class="route-head"><h2>Su ruta</h2><span id="count"></span></div>
+    <ol class="stops" id="stops"></ol>
+    <div class="bar"><i id="bar"></i></div>
+  </nav>
+
+  <div id="blocks" style="display:grid;gap:36px"></div>
+
+  <div class="note" id="note"></div>
+</div>
+
+<script type="application/json" id="datos">{
+ "titulo": "Trece mapas para repasar <em>Estudios Sociales<\/em>",
+ "subtitulo": "Prueba Nacional Estandarizada 2026 · Sexto año",
+ "descripcion": "Cada mapa arma un tema pieza por pieza: primero una pregunta para pensar, después la pieza y su conexión con la anterior, y al cerrar cada capítulo una pregunta tipo examen.",
+ "nota": "Las páginas 13 a 17 de la infografía de repaso (Campaña Nacional, Reformas Liberales, reformas de 1940 y Constitución de 1949) no forman parte del Marco de la prueba 2026, por eso no tienen mapa.",
+ "volver": {
+  "texto": "Todas las materias",
+  "href": "../"
+ },
+ "nombresBloque": {
+  "Bloque 1": "Costa Rica, un espacio socio geográfico de integración",
+  "Bloque 2": "Costa Rica, su construcción histórica, geográfica y ciudadana"
+ },
+ "temas": [
+  {
+   "clave": "t01",
+   "titulo": "Estudios Sociales y Educación Cívica",
+   "bloque": "Bloque 1",
+   "afirmacionCorta": "Afirmación 1",
+   "idea": "Estas materias unen el espacio, el tiempo y la convivencia para formar personas capaces de convivir, participar y construir una Costa Rica más democrática.",
+   "nodos": 16,
+   "capitulos": 5,
+   "preguntas": 4,
+   "oficiales": 4,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "red"
+   ],
+   "html": "t01-estudios-sociales.html",
+   "url": ""
+  },
+  {
+   "clave": "t02",
+   "titulo": "Costa Rica en el mundo",
+   "bloque": "Bloque 1",
+   "afirmacionCorta": "Afirmación 2",
+   "idea": "La posición de Costa Rica, en el istmo que une dos continentes y entre dos mares, trae ventajas y retos, e influye en su economía, su cultura y su relación con Centroamérica.",
+   "nodos": 16,
+   "capitulos": 6,
+   "preguntas": 4,
+   "oficiales": 2,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "green",
+    "red"
+   ],
+   "html": "t02-costa-rica-en-el-mundo.html",
+   "url": ""
+  },
+  {
+   "clave": "t03",
+   "titulo": "Relieve de Costa Rica",
+   "bloque": "Bloque 1",
+   "afirmacionCorta": "Afirmación 3",
+   "idea": "Costa Rica tiene cordilleras, valles, llanuras y costas; cada forma de relieve tiene características propias e influye en la forma de vivir, trabajar y comunicarse.",
+   "nodos": 14,
+   "capitulos": 4,
+   "preguntas": 4,
+   "oficiales": 3,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "red"
+   ],
+   "html": "t03-relieve.html",
+   "url": ""
+  },
+  {
+   "clave": "t04",
+   "titulo": "Región y regionalización",
+   "bloque": "Bloque 1",
+   "afirmacionCorta": "Afirmación 4",
+   "idea": "Una región agrupa lugares con rasgos comunes. Costa Rica se divide en seis regiones socioeconómicas para planificar el desarrollo según las características y necesidades de cada una.",
+   "nodos": 16,
+   "capitulos": 5,
+   "preguntas": 4,
+   "oficiales": 0,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "red"
+   ],
+   "html": "t04-region.html",
+   "url": ""
+  },
+  {
+   "clave": "t05",
+   "titulo": "Instituciones que protegen los derechos estudiantiles",
+   "bloque": "Bloque 1",
+   "afirmacionCorta": "Afirmación 5",
+   "idea": "Cada institución protege un derecho distinto. Reconocer qué derecho se vulnera y a quién acudir permite pedir ayuda y vivir con respeto, justicia y sana convivencia.",
+   "nodos": 17,
+   "capitulos": 5,
+   "preguntas": 4,
+   "oficiales": 2,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "red"
+   ],
+   "html": "t05-instituciones.html",
+   "url": ""
+  },
+  {
+   "clave": "t06",
+   "titulo": "Clima, biodiversidad y conservación ambiental",
+   "bloque": "Bloque 1",
+   "afirmacionCorta": "Afirmaciones 6 y 7",
+   "idea": "El clima influye en la biodiversidad y en las actividades humanas. Nuestras acciones pueden proteger o dañar el ambiente; cuidarlo con hábitos y acuerdos comunitarios mejora la calidad de vida y protege a las futuras generaciones.",
+   "nodos": 18,
+   "capitulos": 5,
+   "preguntas": 4,
+   "oficiales": 2,
+   "colores": [
+    "blue",
+    "orange",
+    "purple",
+    "green",
+    "red"
+   ],
+   "html": "t06-clima-y-ambiente.html",
+   "url": ""
+  },
+  {
+   "clave": "t07",
+   "titulo": "Historia antigua de Costa Rica",
+   "bloque": "Bloque 2",
+   "afirmacionCorta": "Afirmación 1",
+   "idea": "Los primeros habitantes pasaron de grupos nómadas a aldeas tribales y luego a cacicazgos jerarquizados. Su herencia sigue viva en la comida, el arte, el patrimonio y la identidad nacional.",
+   "nodos": 17,
+   "capitulos": 5,
+   "preguntas": 4,
+   "oficiales": 2,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "red"
+   ],
+   "html": "t07-historia-antigua.html",
+   "url": ""
+  },
+  {
+   "clave": "t08",
+   "titulo": "Pueblos de la Costa Rica antigua y sus aportes",
+   "bloque": "Bloque 2",
+   "afirmacionCorta": "Afirmaciones 2 y 3",
+   "idea": "Cada región antigua tuvo pueblos, influencias y arte propios. Sus técnicas, fiestas y saberes siguen vivos y, junto con los aportes africanos y asiáticos, forman una identidad diversa.",
+   "nodos": 16,
+   "capitulos": 5,
+   "preguntas": 5,
+   "oficiales": 5,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "red"
+   ],
+   "html": "t08-pueblos-originarios-y-aportes.html",
+   "url": ""
+  },
+  {
+   "clave": "t09",
+   "titulo": "Pueblos originarios hoy e identidad diversa",
+   "bloque": "Bloque 2",
+   "afirmacionCorta": "Afirmaciones 4 y 5",
+   "idea": "Los pueblos originarios conservan su cultura, pero enfrentan desigualdad y amenazas a sus territorios. Garantizar sus derechos y valorar los aportes de todos los grupos fortalece una identidad intercultural, multiétnica y plurilingüe.",
+   "nodos": 19,
+   "capitulos": 5,
+   "preguntas": 5,
+   "oficiales": 5,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "red"
+   ],
+   "html": "t09-pueblos-originarios-hoy.html",
+   "url": ""
+  },
+  {
+   "clave": "t10",
+   "titulo": "Conquista y colonia en Costa Rica",
+   "bloque": "Bloque 2",
+   "afirmacionCorta": "Afirmaciones 6, 7 y 8",
+   "idea": "La conquista sometió a los pueblos originarios mediante la encomienda y redujo su población. La colonia fue una sociedad agrícola, pequeña y desigual que dejó ciudades, idioma, religión y tradiciones que siguen presentes.",
+   "nodos": 17,
+   "capitulos": 6,
+   "preguntas": 5,
+   "oficiales": 5,
+   "colores": [
+    "blue",
+    "orange",
+    "purple",
+    "teal",
+    "green",
+    "red"
+   ],
+   "html": "t10-conquista-y-colonia.html",
+   "url": ""
+  },
+  {
+   "clave": "t11",
+   "titulo": "Estratificación social y discriminación en la colonia",
+   "bloque": "Bloque 2",
+   "afirmacionCorta": "Afirmación 9",
+   "idea": "La sociedad colonial era una pirámide desigual que discriminaba a mujeres, pueblos originarios y afrodescendientes. Comprender esas injusticias nos ayuda a valorar la igualdad, el respeto y la inclusión hoy.",
+   "nodos": 20,
+   "capitulos": 5,
+   "preguntas": 4,
+   "oficiales": 2,
+   "colores": [
+    "blue",
+    "orange",
+    "purple",
+    "green",
+    "red"
+   ],
+   "html": "t11-estratificacion-colonial.html",
+   "url": ""
+  },
+  {
+   "clave": "t12",
+   "titulo": "Independencia y Pacto de Concordia",
+   "bloque": "Bloque 2",
+   "afirmacionCorta": "Afirmaciones 10 y 11",
+   "idea": "La independencia de 1821 dejó principios democráticos que siguen vigentes, y el Pacto de Concordia mostró que Costa Rica podía organizarse con diálogo, sentando las bases de la república.",
+   "nodos": 16,
+   "capitulos": 5,
+   "preguntas": 5,
+   "oficiales": 4,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "red"
+   ],
+   "html": "t12-independencia-y-pacto.html",
+   "url": ""
+  },
+  {
+   "clave": "t13",
+   "titulo": "Anexión del Partido de Nicoya y símbolos nacionales",
+   "bloque": "Bloque 2",
+   "afirmacionCorta": "Afirmaciones 12 y 13",
+   "idea": "La Anexión del Partido de Nicoya (25 de julio de 1824) amplió e integró el territorio y enriqueció la cultura; los símbolos nacionales representan al país. Ambos fortalecen la identidad, la unidad y el sentido de pertenencia.",
+   "nodos": 17,
+   "capitulos": 5,
+   "preguntas": 4,
+   "oficiales": 4,
+   "colores": [
+    "blue",
+    "orange",
+    "teal",
+    "purple",
+    "red"
+   ],
+   "html": "t13-anexion-y-simbolos.html",
+   "url": ""
+  }
+ ]
+}</script>
+<script>
+(() => {
+  const D = JSON.parse(document.getElementById("datos").textContent);
+  const local = location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+  const KEY = "portada-repasos";
+  let done = {};
+  try { done = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { done = {}; }
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) { /* sin almacenamiento */ } };
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  document.getElementById("sub").textContent = D.subtitulo;
+  if (D.volver) { const b = document.getElementById("back"); b.href = D.volver.href; b.textContent = "← " + D.volver.texto; b.hidden = false; }
+  document.getElementById("h1").innerHTML = D.titulo;
+  document.getElementById("lead").textContent = D.descripcion;
+  document.getElementById("note").innerHTML = D.nota ? `<b>Fuera de esta ruta</b><span>${esc(D.nota)}</span>` : "";
+  if (!D.nota) document.getElementById("note").hidden = true;
+
+  const groups = [];
+  D.temas.forEach(t => {
+    let g = groups.find(x => x.bloque === t.bloque);
+    if (!g) groups.push(g = { bloque: t.bloque, temas: [] });
+    g.temas.push(t);
+  });
+  const blockColor = i => i === 0 ? "var(--b1)" : "var(--b2)";
+  const hrefOf = t => (!local && t.url) ? t.url : t.html;
+
+  document.getElementById("blocks").innerHTML = groups.map((g, gi) => `
+    <section class="block" style="--c:${blockColor(gi)}">
+      <div class="block-head"><span class="eyebrow">${esc(g.bloque)}</span><h2>${esc(D.nombresBloque[g.bloque] || g.bloque)}</h2>
+        <p>${g.temas.length} mapas · ${g.temas.reduce((s, t) => s + t.nodos, 0)} piezas · ${g.temas.reduce((s, t) => s + t.preguntas, 0)} preguntas</p></div>
+      <div class="cards">${g.temas.map(t => `
+        <article class="card" id="${t.clave}">
+          <div class="card-top"><span class="num">${t.clave.slice(1)}</span>
+            <div><span class="tag">${esc(t.afirmacionCorta)}</span><h3>${esc(t.titulo)}</h3></div></div>
+          <div class="chapters" aria-hidden="true">${t.colores.map(c => `<span style="--k:var(--${c})"></span>`).join("")}</div>
+          <p class="idea">${esc(t.idea)}</p>
+          <p class="facts">${t.nodos} piezas · ${t.capitulos} capítulos · ${t.preguntas} preguntas (${t.oficiales} oficiales)</p>
+          <div class="actions">
+            <a class="open" href="${esc(hrefOf(t))}" ${!local && t.url ? 'target="_blank" rel="noopener"' : ""}>Abrir mapa →</a>
+            <label class="check"><input type="checkbox" id="chk-${t.clave}" data-k="${t.clave}"> Ya lo repasé</label>
+          </div>
+        </article>`).join("")}
+      </div>
+    </section>`).join("");
+
+  function paint() {
+    const total = D.temas.length, n = D.temas.filter(t => done[t.clave]).length;
+    document.getElementById("count").textContent = `${n} de ${total} repasados`;
+    document.getElementById("bar").style.width = (n / total * 100) + "%";
+    document.getElementById("stops").innerHTML = D.temas.map((t, i) => {
+      const gi = groups.findIndex(g => g.bloque === t.bloque);
+      const next = D.temas[i + 1];
+      const gap = next && next.bloque !== t.bloque;
+      return `<li class="${done[t.clave] ? "done" : ""} ${gap ? "gap" : ""}" style="--c:${blockColor(gi)}"><a class="stop" href="#${t.clave}" title="${esc(t.titulo)}">${t.clave.slice(1)}</a></li>`;
+    }).join("");
+    D.temas.forEach(t => {
+      document.getElementById(t.clave).classList.toggle("done", !!done[t.clave]);
+      document.getElementById("chk-" + t.clave).checked = !!done[t.clave];
+    });
+  }
+  document.querySelectorAll(".check input").forEach(cb => cb.addEventListener("change", () => {
+    done[cb.dataset.k] = cb.checked; save(); paint();
+  }));
+  paint();
+})();
+</script>

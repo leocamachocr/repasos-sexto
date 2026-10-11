@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Repasos de sexto</title>
+<meta name="description" content="Repasos interactivos para la Prueba Nacional Estandarizada de sexto año en Costa Rica.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: portada general sobre papel punteado; una tarjeta grande por materia */
+:root{
+  --board:#f8fbfc; --dot:#cfdde3; --sheet:#ffffff; --ink:#1c2a31; --muted:#586b74; --line:#d3e0e5;
+  --blue:#1f56b0; --green:#2b8a4f; --orange:#d2641b; --teal:#11808a; --purple:#6a46b6; --red:#c42a3c;
+  --display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible",Verdana,system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --board:#111d23; --dot:#23343c; --sheet:#182730; --ink:#e5eef2; --muted:#9db1ba; --line:#2a3d46;
+  --blue:#82a9f0; --green:#6dc78f; --orange:#f09a5c; --teal:#5dc5ce; --purple:#b49ef0; --red:#f07482; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --board:#111d23; --dot:#23343c; --sheet:#182730; --ink:#e5eef2; --muted:#9db1ba; --line:#2a3d46;
+  --blue:#82a9f0; --green:#6dc78f; --orange:#f09a5c; --teal:#5dc5ce; --purple:#b49ef0; --red:#f07482; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background-color:var(--board);background-image:radial-gradient(var(--dot) 1.3px,transparent 1.4px);background-size:22px 22px;color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+h1,h2{font-family:var(--display);margin:0;line-height:1.1;text-wrap:balance}
+p{margin:0}
+.wrap{max-width:1000px;margin:0 auto;padding-inline:16px;padding-block:40px 56px;display:grid;gap:32px}
+.eyebrow{font-family:var(--display);font-weight:700;font-size:.82rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+header{display:grid;gap:12px;max-width:720px}
+h1{font-size:clamp(2.2rem,6vw,3.6rem);font-weight:800}
+h1 em{font-style:normal;color:var(--blue)}
+header p{font-size:1.08rem;color:var(--muted);max-width:60ch}
+.subjects{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.subject{display:grid;gap:10px;align-content:start;text-decoration:none;color:inherit;background:var(--sheet);border:2px solid var(--line);border-radius:20px;padding:20px;min-width:0;transition:border-color .2s,transform .2s}
+.subject:hover{border-color:var(--c);transform:translateY(-2px)}
+.subject:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.subject h2{font-size:1.7rem;color:var(--c)}
+.subject p{color:var(--muted)}
+.facts{font-family:var(--display);font-weight:700;font-size:.95rem;color:var(--ink);font-variant-numeric:tabular-nums}
+.go{font-family:var(--display);font-weight:700;color:var(--c)}
+.stripe{display:flex;gap:4px}
+.stripe span{flex:1;height:6px;border-radius:3px;background:var(--k)}
+footer{color:var(--muted);font-size:.9rem;display:grid;gap:6px;max-width:70ch}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Prueba Nacional Estandarizada · Sexto año · Costa Rica</span>
+    <h1>Repasos de <em>sexto</em></h1>
+    <p>Mapas interactivos que arman cada tema pieza por pieza, con preguntas para pensar y práctica al estilo de la prueba. Elija una materia.</p>
+  </header>
+
+  <main class="subjects" id="subjects" aria-label="Materias"></main>
+
+  <footer>
+    <p>Se irán agregando otras materias.</p>
+    <p>Material de estudio independiente. No es una publicación oficial del Ministerio de Educación Pública; las preguntas marcadas como «Práctica oficial MEP» provienen de su material público de práctica.</p>
+  </footer>
+</div>
+
+<script type="application/json" id="materias">
+[
+  {"nombre": "Estudios Sociales", "href": "estudios-sociales/", "color": "blue",
+   "descripcion": "Geografía, historia y educación cívica según el Marco de especificaciones 2026.",
+   "detalle": "13 mapas · 20 afirmaciones del temario", "franja": ["blue","orange","teal","purple","green","red"]}
+]
+</script>
+<script>
+(() => {
+  const M = JSON.parse(document.getElementById("materias").textContent);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  document.getElementById("subjects").innerHTML = M.map(m => `
+    <a class="subject" href="${esc(m.href)}" style="--c:var(--${m.color})">
+      <div class="stripe" aria-hidden="true">${m.franja.map(k => `<span style="--k:var(--${k})"></span>`).join("")}</div>
+      <h2>${esc(m.nombre)}</h2>
+      <p>${esc(m.descripcion)}</p>
+      <span class="facts">${esc(m.detalle)}</span>
+      <span class="go">Entrar →</span>
+    </a>`).join("");
+})();
+</script>
