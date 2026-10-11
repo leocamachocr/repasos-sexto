@@ -421,16 +421,30 @@ ol.summary em{font-style:normal;color:var(--muted)}
       "h": 84,
       "titulo": "Agentes del relieve",
       "corto": "Internos y externos",
-      "texto": "Los agentes internos (volcanes, terremotos, movimientos tectónicos) forman montañas, erupciones y fallas. Los externos (viento, lluvia, ríos, oleaje) causan erosión y transporte de materiales.",
+      "texto": "Los agentes internos (volcanes, terremotos, movimientos tectónicos) forman montañas, erupciones y fallas. Los externos (viento, lluvia, ríos, oleaje) causan erosión y transporte de materiales. Influyen en la agricultura, las viviendas y las carreteras.",
       "ejemplo": "Un terremoto levantó la costa de Limón en 1991.",
       "pregunta": "¿Qué agente cambia el relieve desde adentro de la Tierra?"
     },
     {
       "id": "n16",
+      "cap": "c4",
+      "tipo": "rama",
+      "x": 700,
+      "y": 1180,
+      "w": 270,
+      "h": 84,
+      "titulo": "Equilibrio ecológico",
+      "corto": "Lo que lo altera",
+      "texto": "Los fenómenos naturales (terremotos, erupciones volcánicas, inundaciones, deslizamientos) y las actividades humanas (incendios, deforestación, contaminación, urbanismo descontrolado) pueden alterar el equilibrio de los ecosistemas.",
+      "ejemplo": "La ceniza de un volcán obstruye las corrientes de agua.",
+      "pregunta": "¿Qué fenómenos naturales y cuáles humanos alteran un ecosistema?"
+    },
+    {
+      "id": "n17",
       "cap": "c5",
       "tipo": "meta",
       "x": 700,
-      "y": 1180,
+      "y": 1320,
       "w": 310,
       "h": 90,
       "titulo": "Un planeta que cambia",
@@ -440,11 +454,11 @@ ol.summary em{font-style:normal;color:var(--muted)}
       "pregunta": "¿Cómo influye el relieve en dónde se construyen casas?"
     },
     {
-      "id": "n17",
+      "id": "n18",
       "cap": "c5",
       "tipo": "prueba",
       "x": 700,
-      "y": 1320,
+      "y": 1460,
       "w": 310,
       "h": 80,
       "titulo": "En la prueba",
@@ -535,11 +549,16 @@ ol.summary em{font-style:normal;color:var(--muted)}
     {
       "de": "n15",
       "a": "n16",
-      "conector": "por eso"
+      "conector": "y también el"
     },
     {
       "de": "n16",
       "a": "n17",
+      "conector": "por eso"
+    },
+    {
+      "de": "n17",
+      "a": "n18",
       "conector": "y en la prueba"
     }
   ],
@@ -620,16 +639,20 @@ ol.summary em{font-style:normal;color:var(--muted)}
       "quiz": "q3"
     },
     {
+      "tipo": "nodo",
+      "nodo": "n16"
+    },
+    {
       "tipo": "quiz",
       "quiz": "q4"
     },
     {
       "tipo": "nodo",
-      "nodo": "n16"
+      "nodo": "n17"
     },
     {
       "tipo": "nodo",
-      "nodo": "n17"
+      "nodo": "n18"
     },
     {
       "tipo": "final"
@@ -638,8 +661,8 @@ ol.summary em{font-style:normal;color:var(--muted)}
   "quizzes": [
     {
       "id": "q1",
-      "fuente": "Práctica oficial MEP · Ciencias · Geofísica #2",
-      "texto": "",
+      "fuente": "Práctica oficial MEP · Ciencias · Geofísica #2 (con una oración de introducción)",
+      "texto": "Las capas de la Tierra son la geosfera, la atmósfera y la hidrosfera.",
       "pregunta": "¿Cuál de las siguientes opciones se refiere a la capa de la Tierra denominada hidrósfera?",
       "opciones": [
         "Es la parte de la Tierra conformada por todas las masas de agua que se encuentran tanto sobre, como debajo de la superficie terrestre",
@@ -701,7 +724,7 @@ ol.summary em{font-style:normal;color:var(--muted)}
       "correcta": 3,
       "explicacion": "Un factor natural es una erupción volcánica: la ceniza obstruye las corrientes de agua. Los combustibles fósiles, los plaguicidas y las represas son producidos por actividades humanas.",
       "nodos": [
-        "n15"
+        "n16"
       ]
     }
   ]
