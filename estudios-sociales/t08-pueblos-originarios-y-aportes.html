@@ -46,7 +46,7 @@ header{min-width:0}
 .progress{position:relative;height:4px;background:var(--line)}
 .progress i{position:absolute;inset:0 auto 0 0;background:var(--blue);transition:width .5s}
 
-.stage{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(320px,1fr);min-height:0}
+.stage{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(320px,1fr);min-height:0;overflow-x:clip}
 .board{position:relative;min-height:0;background-color:var(--board);background-image:radial-gradient(var(--dot) 1.3px,transparent 1.4px);background-size:22px 22px;overflow:hidden}
 .board svg{width:100%;height:100%;display:block;touch-action:manipulation}
 .chapter-tag{position:absolute;left:14px;top:12px;display:grid;gap:0;pointer-events:none;max-width:calc(100% - 28px)}
@@ -156,7 +156,7 @@ ol.summary em{font-style:normal;color:var(--muted)}
 <div class="app">
   <header>
     <div class="top">
-      <a class="brand" href="./" style="text-decoration:none" title="Volver a todos los temas"><b>← Mapa que se descubre</b><span id="brandSub"></span></a>
+      <div class="brand"><b>Mapa que se descubre</b><span id="brandSub"></span></div>
       <div class="chips" id="chips" role="list"></div>
     </div>
     <div class="progress"><i id="bar"></i></div>
@@ -197,7 +197,8 @@ ol.summary em{font-style:normal;color:var(--muted)}
       "GH#9",
       "GH#37"
     ],
-    "idea_clave": "Cada región antigua tuvo pueblos, influencias y arte propios. Sus técnicas, fiestas y saberes siguen vivos y, junto con los aportes africanos y asiáticos, forman una identidad diversa."
+    "idea_clave": "Cada región antigua tuvo pueblos, influencias y arte propios. Sus técnicas, fiestas y saberes siguen vivos y, junto con los aportes africanos y asiáticos, forman una identidad diversa.",
+    "portada": "./"
   },
   "capitulos": [
     {
@@ -653,7 +654,7 @@ ol.summary em{font-style:normal;color:var(--muted)}
         "conservación de técnicas ancestrales de alfarería que mantienen viva la identidad cultural de Guanacaste.",
         "influencia directa de la colonización española en el diseño de la cerámica tradicional chorotega."
       ],
-      "correcta": 0,
+      "correcta": 2,
       "explicacion": "El texto dice que la técnica «perduró» y fue «preservada» por las mujeres: la C habla de conservar técnicas ancestrales. La A es una verdad a medias: los diseños originales se perdieron, así que no «se mantiene igual». La B dice «únicamente» y la D atribuye todo a los españoles.",
       "nodos": [
         "n2",
@@ -722,6 +723,12 @@ ol.summary em{font-style:normal;color:var(--muted)}
 <script>
 (() => {
   const G = JSON.parse(document.getElementById("grafo").textContent);
+  if (G.meta.portada) {
+    const old = document.querySelector(".brand"), a = document.createElement("a");
+    a.className = "brand"; a.href = G.meta.portada; a.title = "Volver a todos los temas"; a.style.textDecoration = "none";
+    a.innerHTML = old.innerHTML; a.querySelector("b").textContent = "← " + a.querySelector("b").textContent;
+    old.replaceWith(a);
+  }
   const SVGNS = "http://www.w3.org/2000/svg";
   const N = Object.fromEntries(G.nodos.map(n => [n.id, n]));
   const CAP = Object.fromEntries(G.capitulos.map(c => [c.id, c]));
@@ -935,13 +942,14 @@ ol.summary em{font-style:normal;color:var(--muted)}
       return `<button class="opt ${cls}" type="button" data-k="${k}" ${done ? "disabled" : ""}><span class="l">${LETTERS[k]})</span><span>${txt}</span></button>`;
     }).join("");
     const ok = ans === q.correcta;
+    const trapNote = done && opts.includes("<mark>") ? `<small>En rojo: palabras trampa. La respuesta correcta nunca las usa.</small>` : "";
     return `
       <span class="eyebrow">${esc(q.fuente)}</span>
       <h2>Practique como en la prueba</h2>
       <div class="passage"><small>Lea el siguiente texto:</small><p>${esc(q.texto)}</p></div>
       <p class="qtext">${esc(q.pregunta)}</p>
       <div class="opts">${opts}</div>
-      ${done ? `<div class="feedback" style="--fc:${ok ? "var(--ok)" : "var(--bad)"}"><b>${ok ? "¡Correcto!" : `La correcta es la ${LETTERS[q.correcta]}`}</b><p>${esc(q.explicacion)}</p><small>En rojo: palabras trampa. La respuesta correcta nunca las usa.</small></div>`
+      ${done ? `<div class="feedback" style="--fc:${ok ? "var(--ok)" : "var(--bad)"}"><b>${ok ? "¡Correcto!" : `La correcta es la ${LETTERS[q.correcta]}`}</b><p>${esc(q.explicacion)}</p>${trapNote}</div>`
               : `<small style="color:var(--muted)">En el mapa se resaltan las piezas que ayudan a responder.</small>`}`;
   }
 
