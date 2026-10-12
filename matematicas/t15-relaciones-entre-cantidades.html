@@ -1,0 +1,1038 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mapa de relaciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: tablero (mapa conceptual sobre papel punteado) a la izquierda + panel de lectura a la derecha; en teléfono, tablero arriba y panel abajo */
+:root{
+  --bg:#eef4f6; --board:#f8fbfc; --dot:#cfdde3; --sheet:#ffffff; --ink:#1c2a31; --muted:#586b74; --line:#d3e0e5;
+  --blue:#1f56b0; --green:#2b8a4f; --orange:#d2641b; --teal:#11808a; --purple:#6a46b6; --red:#c42a3c; --gold:#e3a51a;
+  --ok:#2b8a4f; --bad:#c42a3c; --mark:#ffe1e4; --tint:12%;
+  --display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible",Verdana,system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e171c; --board:#111d23; --dot:#23343c; --sheet:#182730; --ink:#e5eef2; --muted:#9db1ba; --line:#2a3d46;
+  --blue:#82a9f0; --green:#6dc78f; --orange:#f09a5c; --teal:#5dc5ce; --purple:#b49ef0; --red:#f07482; --gold:#f2c552;
+  --ok:#6dc78f; --bad:#f07482; --mark:#4a2128; --tint:20%; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e171c; --board:#111d23; --dot:#23343c; --sheet:#182730; --ink:#e5eef2; --muted:#9db1ba; --line:#2a3d46;
+  --blue:#82a9f0; --green:#6dc78f; --orange:#f09a5c; --teal:#5dc5ce; --purple:#b49ef0; --red:#f07482; --gold:#f2c552;
+  --ok:#6dc78f; --bad:#f07482; --mark:#4a2128; --tint:20%; color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+button{font:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.15;text-wrap:balance}
+p{margin:0}
+
+.app{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr);grid-template-columns:minmax(0,1fr)}
+header{min-width:0}
+.top{display:flex;align-items:center;gap:14px;padding:10px 16px;border-bottom:1.5px solid var(--line);background:var(--sheet);min-width:0}
+.brand{display:grid;line-height:1.1;flex:none}
+.brand b{font-family:var(--display);font-size:1.15rem;color:var(--blue)}
+.brand span{font-size:.78rem;color:var(--muted)}
+.chips{display:flex;gap:6px;overflow-x:auto;min-width:0;flex:1;padding-block:2px;scrollbar-width:thin}
+.chip{flex:none;font-family:var(--display);font-weight:700;font-size:.85rem;padding:3px 11px;border-radius:999px;border:1.5px solid var(--line);color:var(--muted);background:transparent;white-space:nowrap}
+.chip.done{color:var(--c);border-color:color-mix(in srgb,var(--c) 40%,transparent)}
+.chip.now{background:var(--c);border-color:var(--c);color:var(--sheet)}
+.progress{position:relative;height:4px;background:var(--line)}
+.progress i{position:absolute;inset:0 auto 0 0;background:var(--blue);transition:width .5s}
+
+.stage{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(320px,1fr);min-height:0;overflow-x:clip}
+.board{position:relative;min-height:0;background-color:var(--board);background-image:radial-gradient(var(--dot) 1.3px,transparent 1.4px);background-size:22px 22px;overflow:hidden}
+.board svg{width:100%;height:100%;display:block;touch-action:manipulation}
+.chapter-tag{position:absolute;left:14px;top:12px;display:grid;gap:0;pointer-events:none;max-width:calc(100% - 28px)}
+.chapter-tag small{font-family:var(--display);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:.72rem;color:var(--muted)}
+.chapter-tag strong{font-family:var(--display);font-size:1.35rem;color:var(--c);line-height:1.1}
+.chapter-tag.swap{animation:tagIn .6s ease}
+@keyframes tagIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.hint{position:absolute;right:12px;bottom:10px;font-size:.78rem;color:var(--muted);background:var(--sheet);border:1px solid var(--line);padding:3px 9px;border-radius:999px}
+
+.panel{display:grid;grid-template-rows:minmax(0,1fr) auto;border-left:1.5px solid var(--line);background:var(--sheet);min-height:0}
+.card{overflow-y:auto;padding:20px 22px;display:grid;gap:14px;align-content:start}
+.card.enter{animation:cardIn .45s ease}
+@keyframes cardIn{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
+.eyebrow{font-family:var(--display);font-weight:700;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--c)}
+.card h2{font-size:1.75rem;color:var(--ink)}
+.card .sub{font-family:var(--display);font-weight:600;font-size:1.1rem;color:var(--c);margin-top:-8px}
+.think{border-radius:16px;padding:18px;background:color-mix(in srgb,var(--c) var(--tint),var(--sheet));border:2px dashed color-mix(in srgb,var(--c) 55%,transparent);display:grid;gap:8px}
+.think b{font-family:var(--display);font-size:.95rem;color:var(--c)}
+.think p{font-family:var(--display);font-weight:600;font-size:1.35rem;line-height:1.25}
+.think small{color:var(--muted)}
+.thread{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:.85rem;color:var(--muted)}
+.thread span{background:var(--bg);border-radius:8px;padding:1px 8px}
+.thread span.last{background:var(--c);color:var(--sheet);font-weight:700}
+.thread i{font-style:normal;opacity:.7}
+.link{font-size:.95rem;color:var(--muted);border-left:4px solid var(--c);padding-left:10px}
+.link em{font-style:normal;font-weight:700;color:var(--c)}
+.example{border-radius:14px;padding:12px 14px;background:var(--bg);display:grid;gap:4px}
+.example b{font-family:var(--display);font-size:.95rem;color:var(--c)}
+ul.steps{margin:0;padding:0;list-style:none;display:grid;gap:10px;counter-reset:s}
+ul.steps li{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:start;counter-increment:s}
+ul.steps li::before{content:counter(s);width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--c);color:var(--sheet);font-family:var(--display);font-weight:700}
+.passage{border-radius:14px;padding:12px 14px;background:var(--bg);font-size:.95rem;display:grid;gap:6px}
+.passage small{color:var(--muted)}
+.qtext{font-weight:700}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;border:2px solid var(--line);background:var(--sheet);color:var(--ink);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start;font-size:.95rem;transition:border-color .2s,background .2s}
+.opt:hover:not(:disabled){border-color:var(--c)}
+.opt .l{font-family:var(--display);font-weight:800;color:var(--c)}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) var(--tint),var(--sheet))}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) var(--tint),var(--sheet))}
+.opt mark{background:var(--mark);color:var(--bad);font-weight:700;border-radius:4px;padding:0 2px}
+.feedback{border-radius:14px;padding:12px 14px;display:grid;gap:6px;border:2px solid var(--fc);background:color-mix(in srgb,var(--fc) var(--tint),var(--sheet))}
+.feedback b{font-family:var(--display);font-size:1.1rem;color:var(--fc)}
+.key{border-radius:16px;padding:16px;background:color-mix(in srgb,var(--gold) 22%,var(--sheet));display:grid;gap:6px}
+.key b{font-family:var(--display);font-size:1.1rem}
+.score{font-family:var(--display);font-size:2.6rem;font-weight:800;color:var(--c);line-height:1;font-variant-numeric:tabular-nums}
+ol.summary{margin:0;padding-left:1.2em;display:grid;gap:6px;font-size:.95rem}
+ol.summary em{font-style:normal;color:var(--muted)}
+
+.nav{display:flex;gap:10px;padding:12px 22px;border-top:1.5px solid var(--line);background:var(--sheet)}
+.btn{border-radius:12px;padding:10px 16px;font-family:var(--display);font-weight:700;font-size:1.05rem;border:2px solid var(--line);background:var(--sheet);color:var(--ink)}
+.btn.primary{flex:1;background:var(--c);border-color:var(--c);color:var(--sheet)}
+.btn:disabled{opacity:.45;cursor:default}
+
+/* Nodos SVG */
+.node{cursor:default}
+.node.on{cursor:pointer}
+.node .pop{transform-box:fill-box;transform-origin:center;transition:transform .55s cubic-bezier(.3,1.45,.55,1),opacity .35s}
+.node:not(.on) .pop{transform:scale(.55);opacity:0}
+.node .box{fill:color-mix(in srgb,var(--c) var(--tint),var(--sheet));stroke:var(--c);stroke-width:2.5}
+.node.raiz .box,.node.meta .box{fill:var(--c)}
+.node.prueba .box{stroke-dasharray:8 5;fill:color-mix(in srgb,var(--gold) 22%,var(--sheet));stroke:var(--gold)}
+.node .nd{width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:6px 10px;gap:2px;font-family:var(--body);color:var(--ink)}
+.node .nd b{font-family:var(--display);font-weight:700;font-size:21px;line-height:1.05;color:var(--c)}
+.node .nd span{font-size:14.5px;line-height:1.2;color:var(--muted)}
+.node.hoja .nd b{font-size:17px}
+.node.hoja .nd span{font-size:13px}
+.node.raiz .nd b,.node.meta .nd b,.node.raiz .nd span,.node.meta .nd span{color:var(--sheet)}
+.node.raiz .nd b,.node.meta .nd b{font-size:23px}
+.node.prueba .nd b{color:var(--ink)}
+.node .ghost{opacity:0;transition:opacity .35s}
+.node.ghosty .ghost{opacity:1}
+.node .ghost rect{fill:transparent;stroke:var(--muted);stroke-width:2;stroke-dasharray:7 6;opacity:.55}
+.node .ghost text{fill:var(--muted);font-family:var(--display);font-weight:800;font-size:30px;opacity:.55}
+.node.ghosty.next .ghost rect{stroke:var(--c);opacity:1;animation:breathe 1.6s ease-in-out infinite}
+.node.ghosty.next .ghost text{fill:var(--c);opacity:1}
+@keyframes breathe{50%{stroke-dashoffset:13}}
+.node.fresh .box{animation:glow 1.4s ease}
+@keyframes glow{0%{stroke-width:9}100%{stroke-width:2.5}}
+.node.focus .box{stroke-width:5}
+.node.dim{opacity:.28;transition:opacity .4s}
+.node.peek .box{stroke-width:5}
+
+.edge{fill:none;stroke:var(--c);stroke-width:3;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;opacity:.75;transition:stroke-dashoffset .8s ease .2s}
+.edge.on{stroke-dashoffset:0}
+.elabel{opacity:0;transition:opacity .4s ease .75s}
+.elabel.on{opacity:1}
+.elabel rect{fill:var(--board);stroke:color-mix(in srgb,var(--c) 45%,transparent);stroke-width:1.5}
+.elabel text{fill:var(--c);font-family:var(--body);font-weight:700;font-size:13.5px}
+.edge.dim,.elabel.dim{opacity:.2}
+
+@media (max-width:820px){
+  .app{height:auto;min-height:100%}
+  .stage{grid-template-columns:minmax(0,1fr);grid-template-rows:auto 1fr}
+  .board{height:52vh;min-height:300px;position:sticky;top:env(safe-area-inset-top,0px);z-index:1;border-bottom:1.5px solid var(--line)}
+  .panel{border-left:0}
+  .card{padding:16px}
+  .nav{position:sticky;bottom:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px))}
+  .brand span{display:none}
+  .hint{display:none}
+  .chapter-tag strong{font-size:1.1rem}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+
+<div class="app">
+  <header>
+    <div class="top">
+      <div class="brand"><b>Mapa que se descubre</b><span id="brandSub"></span></div>
+      <div class="chips" id="chips" role="list"></div>
+    </div>
+    <div class="progress"><i id="bar"></i></div>
+  </header>
+  <main class="stage">
+    <div class="board" id="board">
+      <svg id="map" viewBox="0 0 1400 1100" role="img" aria-label="Mapa conceptual del tema">
+        <g id="edges"></g><g id="labels"></g><g id="nodes"></g>
+      </svg>
+      <div class="chapter-tag" id="ctag"><small></small><strong></strong></div>
+      <div class="hint">← → para avanzar · toque una pieza para repasarla</div>
+    </div>
+    <aside class="panel">
+      <div class="card" id="card" aria-live="polite"></div>
+      <div class="nav">
+        <button class="btn" id="prev" type="button">Anterior</button>
+        <button class="btn primary" id="next" type="button">Siguiente</button>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<script type="application/json" id="grafo">
+{
+  "meta": {
+    "titulo_pagina": "Mapa de relaciones",
+    "titulo": "Relaciones entre dos cantidades",
+    "bloque": "Bloque 4 · 4.2 Relaciones entre cantidades",
+    "afirmacion": "Resuelve problemas que involucran relaciones entre dos cantidades, en una expresión matemática.",
+    "subtemas": "Cantidades variables o constantes; relaciones entre dos cantidades variables en una expresión; relaciones en tablas que varían simultáneamente; relaciones en una escala en figuras o gráficas",
+    "fuentes": [
+      "src-repaso-matematicas-sexto.md (pág. 14)",
+      "Práctica oficial MEP · Relaciones y Álgebra #2 y #6",
+      "Práctica propia #49, #50 y #51"
+    ],
+    "idea_clave": "Cuando una cantidad depende de otra, la relación se escribe con una expresión, una tabla o una escala. Conociéndola, se calcula una cantidad a partir de la otra.",
+    "clave": "t15",
+    "portada": "./"
+  },
+  "capitulos": [
+    {
+      "id": "c1",
+      "titulo": "¿Qué es?",
+      "color": "blue"
+    },
+    {
+      "id": "c2",
+      "titulo": "¿Variable o constante?",
+      "color": "green"
+    },
+    {
+      "id": "c3",
+      "titulo": "¿Cómo se escribe la relación?",
+      "color": "orange"
+    },
+    {
+      "id": "c4",
+      "titulo": "¿Cómo se ve en una tabla?",
+      "color": "teal"
+    },
+    {
+      "id": "c5",
+      "titulo": "¿Y en una escala?",
+      "color": "purple"
+    },
+    {
+      "id": "c6",
+      "titulo": "¿A dónde lleva?",
+      "color": "red"
+    }
+  ],
+  "nodos": [
+    {
+      "id": "n1",
+      "cap": "c1",
+      "tipo": "raiz",
+      "titulo": "Relaciones entre cantidades",
+      "corto": "Si una cambia, la otra también",
+      "texto": "Dos cantidades están relacionadas cuando el valor de una depende del de la otra. La relación se puede escribir con una expresión, una tabla o una gráfica.",
+      "ejemplo": "El costo de los cuadernos depende de cuántos se compren.",
+      "pregunta": "Si compra el doble de lapiceros, ¿qué pasa con lo que paga?",
+      "w": 330,
+      "h": 90,
+      "y": 80,
+      "x": 700
+    },
+    {
+      "id": "n2",
+      "cap": "c2",
+      "tipo": "rama",
+      "titulo": "Variables y constantes",
+      "corto": "Cambian o se mantienen",
+      "texto": "Una cantidad variable puede tomar distintos valores; una constante siempre vale lo mismo en esa situación.",
+      "ejemplo": "En un taxi, la tarifa inicial es constante; los kilómetros recorridos son variables.",
+      "pregunta": "En su escuela, ¿qué cantidad cambia cada día y cuál se mantiene igual?",
+      "w": 260,
+      "h": 84,
+      "y": 250,
+      "x": 350
+    },
+    {
+      "id": "n3",
+      "cap": "c2",
+      "tipo": "hoja",
+      "titulo": "Constante",
+      "corto": "No cambia",
+      "texto": "Su valor es fijo: el número de lados de un triángulo (3), el precio fijo de un producto o la capacidad máxima de un salón.",
+      "ejemplo": "Un cuaderno a ₡750: el precio no cambia aunque compre varios.",
+      "w": 146,
+      "h": 104,
+      "y": 410,
+      "x": 270
+    },
+    {
+      "id": "n4",
+      "cap": "c2",
+      "tipo": "hoja",
+      "titulo": "Variable",
+      "corto": "Puede cambiar",
+      "texto": "Su valor cambia según la situación: cuántas manzanas se compran, la distancia recorrida o el dinero ahorrado cada mes.",
+      "ejemplo": "La duración de un viaje en bus cambia según el tránsito.",
+      "w": 146,
+      "h": 104,
+      "y": 410,
+      "x": 430
+    },
+    {
+      "id": "n5",
+      "cap": "c3",
+      "tipo": "rama",
+      "titulo": "Expresión matemática",
+      "corto": "Una fórmula con letras",
+      "texto": "Una expresión muestra cómo se calcula una cantidad a partir de otra. Las letras representan las cantidades variables.",
+      "ejemplo": "C = 350 × n: si n = 3 lapiceros, C = 350 × 3 = ₡1050.",
+      "pregunta": "Si un helado cuesta ₡600, ¿qué operación da el costo de 5 helados?",
+      "w": 260,
+      "h": 84,
+      "y": 250,
+      "x": 1050
+    },
+    {
+      "id": "n6",
+      "cap": "c3",
+      "tipo": "hoja",
+      "titulo": "Sustituir",
+      "corto": "Cambiar la letra por un número",
+      "texto": "Para usar la expresión, se reemplaza la letra por el valor dado y se calcula.",
+      "ejemplo": "d = 60 × t: si t = 2 h, d = 120 km.",
+      "w": 146,
+      "h": 104,
+      "y": 410,
+      "x": 970
+    },
+    {
+      "id": "n7",
+      "cap": "c3",
+      "tipo": "hoja",
+      "titulo": "Escribir la expresión",
+      "corto": "Precio × cantidad",
+      "texto": "Si cada unidad cuesta lo mismo, el total es precio × cantidad, no precio + cantidad.",
+      "ejemplo": "Entradas a ₡2000: C = 2000 × n.",
+      "w": 146,
+      "h": 104,
+      "y": 410,
+      "x": 1130
+    },
+    {
+      "id": "n8",
+      "cap": "c4",
+      "tipo": "rama",
+      "titulo": "Tablas",
+      "corto": "Dos cantidades que varían juntas",
+      "texto": "En una tabla, cuando una cantidad aumenta, la otra cambia siguiendo una regla. Si una se duplica y la otra también, la relación es de proporción.",
+      "ejemplo": "1 cuaderno ₡750, 2 → ₡1500, 3 → ₡2250: cada cuaderno suma ₡750.",
+      "pregunta": "En la tabla de cuadernos, ¿cuánto costarían 6?",
+      "w": 260,
+      "h": 84,
+      "y": 570,
+      "x": 700
+    },
+    {
+      "id": "n9",
+      "cap": "c4",
+      "tipo": "hoja",
+      "titulo": "Hallar la regla",
+      "corto": "Cuánto vale una unidad",
+      "texto": "Divida el valor entre la cantidad: si siempre da lo mismo, ese es el valor de una unidad.",
+      "ejemplo": "₡2250 ÷ 3 = ₡750 por cuaderno.",
+      "w": 146,
+      "h": 104,
+      "y": 745,
+      "x": 620
+    },
+    {
+      "id": "n10",
+      "cap": "c4",
+      "tipo": "hoja",
+      "titulo": "Puntos en el plano",
+      "corto": "Cada fila es un punto",
+      "texto": "Cada pareja de la tabla se puede ubicar como un punto (x, y). Si cumplen la misma regla, quedan alineados.",
+      "ejemplo": "y = 2x: (1, 2), (2, 4) y (3, 6).",
+      "w": 146,
+      "h": 104,
+      "y": 745,
+      "x": 780
+    },
+    {
+      "id": "n11",
+      "cap": "c5",
+      "tipo": "rama",
+      "titulo": "Escalas",
+      "corto": "Cuánto vale cada espacio",
+      "texto": "En mapas y gráficas, la escala dice cuánto representa cada centímetro o cada división. Se multiplica la medida por el valor de la escala.",
+      "ejemplo": "Si 1 cm del mapa son 5 km, 4 cm son 20 km.",
+      "pregunta": "En una gráfica donde cada división vale ₡250, ¿cuánto marcan 4 divisiones?",
+      "w": 260,
+      "h": 84,
+      "y": 900,
+      "x": 700
+    },
+    {
+      "id": "n12",
+      "cap": "c5",
+      "tipo": "hoja",
+      "titulo": "Leer la escala",
+      "corto": "Revise cada eje",
+      "texto": "Antes de leer un punto, revise cuánto vale cada división en cada eje. En la infografía, la gráfica del ciclista no empieza en 0 km: lea con cuidado.",
+      "ejemplo": "Fotocopias: 10 copias cuestan ₡500, así que cada copia cuesta ₡50.",
+      "w": 146,
+      "h": 104,
+      "y": 1040,
+      "x": 620
+    },
+    {
+      "id": "n13",
+      "cap": "c5",
+      "tipo": "hoja",
+      "titulo": "Errores comunes",
+      "corto": "Sumar en vez de multiplicar",
+      "texto": "Los errores más comunes son sumar la escala en vez de multiplicar, copiar la regla de una sola fila y confundir constante con variable.",
+      "ejemplo": "6 cm a 3 km por cm: 6 × 3 = 18 km, no 6 + 3 = 9.",
+      "w": 146,
+      "h": 104,
+      "y": 1040,
+      "x": 780
+    },
+    {
+      "id": "n14",
+      "cap": "c6",
+      "tipo": "meta",
+      "titulo": "Una depende de la otra",
+      "corto": "Predecir con la regla",
+      "texto": "Si se conoce la relación entre dos cantidades, se puede calcular una a partir de la otra sin medir todo de nuevo.",
+      "ejemplo": "Con el precio por litro se sabe cuánto costarán 7 litros.",
+      "pregunta": "¿Qué relación usa su familia para calcular el costo de la gasolina?",
+      "x": 700,
+      "y": 1180,
+      "w": 310,
+      "h": 90
+    },
+    {
+      "id": "n15",
+      "cap": "c6",
+      "tipo": "prueba",
+      "titulo": "En la prueba",
+      "corto": "Variable, expresión, tabla o escala",
+      "texto": "Piden reconocer una cantidad variable o constante, elegir la expresión, completar una tabla o usar una escala. Los distractores suman en vez de multiplicar o toman una cantidad fija como variable.",
+      "ejemplo": "Pruebe la expresión elegida con una fila de la tabla.",
+      "pregunta": "¿Cómo comprueba que una expresión es la correcta?",
+      "x": 700,
+      "y": 1320,
+      "w": 310,
+      "h": 80
+    }
+  ],
+  "aristas": [
+    {
+      "de": "n1",
+      "a": "n2",
+      "conector": "distingue"
+    },
+    {
+      "de": "n1",
+      "a": "n5",
+      "conector": "y las une en una"
+    },
+    {
+      "de": "n2",
+      "a": "n3",
+      "conector": "como"
+    },
+    {
+      "de": "n2",
+      "a": "n4",
+      "conector": ""
+    },
+    {
+      "de": "n5",
+      "a": "n6",
+      "conector": "al"
+    },
+    {
+      "de": "n5",
+      "a": "n7",
+      "conector": ""
+    },
+    {
+      "de": "n2",
+      "a": "n8",
+      "conector": "que se organiza en",
+      "desde": "r"
+    },
+    {
+      "de": "n5",
+      "a": "n8",
+      "conector": "",
+      "desde": "l"
+    },
+    {
+      "de": "n8",
+      "a": "n9",
+      "conector": "para"
+    },
+    {
+      "de": "n8",
+      "a": "n10",
+      "conector": ""
+    },
+    {
+      "de": "n8",
+      "a": "n11",
+      "conector": ""
+    },
+    {
+      "de": "n11",
+      "a": "n12",
+      "conector": "por eso"
+    },
+    {
+      "de": "n11",
+      "a": "n13",
+      "conector": ""
+    },
+    {
+      "de": "n11",
+      "a": "n14",
+      "conector": ""
+    },
+    {
+      "de": "n14",
+      "a": "n15",
+      "conector": "y en la prueba"
+    }
+  ],
+  "pasos": [
+    {
+      "tipo": "intro"
+    },
+    {
+      "tipo": "nodo",
+      "nodo": "n1"
+    },
+    {
+      "tipo": "nodo",
+      "nodo": "n2"
+    },
+    {
+      "tipo": "nodo",
+      "nodo": "n3"
+    },
+    {
+      "tipo": "nodo",
+      "nodo": "n4"
+    },
+    {
+      "tipo": "quiz",
+      "quiz": "q1"
+    },
+    {
+      "tipo": "nodo",
+      "nodo": "n5"
+    },
+    {
+      "tipo": "nodo",
+      "nodo": "n6"
+    },
+    {
+      "tipo": "nodo",
+      "nodo": "n7"
+    },
+    {
+      "tipo": "quiz",
+      "quiz": "q2"
+    },
+    {
+      "tipo": "nodo",
+      "nodo": "n8"
+    },
+    {
+      "tipo": "nodo",
+      "nodo": "n9"
+    },
+    {
+      "tipo": "nodo",
+      "nodo": "n10"
+    },
+    {
+      "tipo": "quiz",
+      "quiz": "q3"
+    },
+    {
+      "tipo": "quiz",
+      "quiz": "q4"
+    },
+    {
+      "tipo": "nodo",
+      "nodo": "n11"
+    },
+    {
+      "tipo": "nodo",
+      "nodo": "n12"
+    },
+    {
+      "tipo": "nodo",
+      "nodo": "n13"
+    },
+    {
+      "tipo": "nodo",
+      "nodo": "n14"
+    },
+    {
+      "tipo": "nodo",
+      "nodo": "n15"
+    },
+    {
+      "tipo": "quiz",
+      "quiz": "q5"
+    },
+    {
+      "tipo": "final"
+    }
+  ],
+  "quizzes": [
+    {
+      "id": "q1",
+      "fuente": "Práctica oficial MEP · Relaciones y Álgebra #2",
+      "texto": "Un teatro tiene una ocupación máxima de 100 personas y el precio de la entrada por persona que se paga para ingresar a este es ₡2000. Las obras que se presentan en ese teatro tienen una duración entre 120 min y 130 min. Además, cada fila tiene 10 asientos.",
+      "pregunta": "De acuerdo con la información anterior, una cantidad variable corresponde",
+      "opciones": [
+        "a la ocupación máxima del teatro.",
+        "a la duración en minutos, de las obras que se presentan en ese teatro.",
+        "al precio de la entrada, por persona, que se paga para ingresar al teatro.",
+        "a la cantidad de asientos que tiene cada fila."
+      ],
+      "correcta": 1,
+      "explicacion": "La duración de las obras va de 120 a 130 min: cambia de una obra a otra, así que es variable, B. La ocupación máxima (100), el precio de la entrada (₡2000) y los asientos por fila (10) son fijos: constantes.",
+      "nodos": [
+        "n2",
+        "n4"
+      ]
+    },
+    {
+      "id": "q2",
+      "fuente": "Práctica propia (estilo MEP) #49",
+      "texto": "En una librería, el precio de cada cuaderno es ₡900.",
+      "pregunta": "Si \"n\" representa la cantidad de cuadernos que se compran y \"C\" representa el costo total en colones, ¿cuál de las siguientes expresiones permite calcular el costo total de la compra?",
+      "opciones": [
+        "C = 900 × n",
+        "C = 900 + n",
+        "C = n − 900",
+        "C = 900 ÷ n"
+      ],
+      "correcta": 0,
+      "explicacion": "La correcta es la A: el costo es precio por cantidad, C = 900 × n. Con n = 3 da ₡2700. B suma el precio y la cantidad; C resta y D divide, y ninguna da el costo.",
+      "nodos": [
+        "n5",
+        "n7"
+      ]
+    },
+    {
+      "id": "q3",
+      "fuente": "Práctica propia (estilo MEP) #50",
+      "texto": "La siguiente tabla muestra el precio, en colones, de distintas cantidades de litros de gasolina en una estación de servicio: Litros de gasolina: 1, 2, 3, 4. Precio (en colones): 800, 1600, 2400, 3200.",
+      "pregunta": "De acuerdo con la información anterior, si se mantiene esa relación, ¿cuál es el precio, en colones, de 7 litros de gasolina?",
+      "opciones": [
+        "4000",
+        "5600",
+        "6400",
+        "4800"
+      ],
+      "correcta": 1,
+      "explicacion": "Cada litro cuesta 800 ÷ 1 = ₡800 (y 3200 ÷ 4 = ₡800). 7 litros: 800 × 7 = ₡5600, B. A calcula 800 × 5, C 800 × 8 y D 800 × 6.",
+      "nodos": [
+        "n8",
+        "n9"
+      ]
+    },
+    {
+      "id": "q4",
+      "fuente": "Práctica oficial MEP · Relaciones y Álgebra #6",
+      "texto": "Una máquina bombea 15 L de agua cada 3 min.",
+      "pregunta": "¿En cuántos minutos esa máquina bombeará 45 L de agua?",
+      "opciones": [
+        "6",
+        "9",
+        "30",
+        "12"
+      ],
+      "correcta": 1,
+      "explicacion": "15 L cada 3 min: 45 L son 3 veces 15 L, así que tarda 3 × 3 = 9 min, B. A suma 3 + 3; C resta 45 − 15; D multiplica 3 × 4.",
+      "nodos": [
+        "n9"
+      ]
+    },
+    {
+      "id": "q5",
+      "fuente": "Práctica propia (estilo MEP) #51",
+      "texto": "En un mapa, cada centímetro representa 5 km de distancia real.",
+      "pregunta": "Si en ese mapa la distancia entre dos pueblos es 7 cm, entonces, ¿cuál es la distancia real, en kilómetros, entre esos pueblos?",
+      "opciones": [
+        "12",
+        "75",
+        "35",
+        "57"
+      ],
+      "correcta": 2,
+      "explicacion": "Cada centímetro representa 5 km: 7 × 5 = 35 km, C. A suma 7 + 5; B y D pegan los números (75 y 57).",
+      "nodos": [
+        "n11",
+        "n13"
+      ]
+    }
+  ]
+}
+</script>
+
+<script>
+(() => {
+  const G = JSON.parse(document.getElementById("grafo").textContent);
+  if (G.meta.portada) {
+    const old = document.querySelector(".brand"), a = document.createElement("a");
+    a.className = "brand"; a.href = G.meta.portada; a.title = "Volver a todos los temas"; a.style.textDecoration = "none";
+    a.innerHTML = old.innerHTML; a.querySelector("b").textContent = "← " + a.querySelector("b").textContent;
+    old.replaceWith(a);
+  }
+  const SVGNS = "http://www.w3.org/2000/svg";
+  const N = Object.fromEntries(G.nodos.map(n => [n.id, n]));
+  const CAP = Object.fromEntries(G.capitulos.map(c => [c.id, c]));
+  const Q = Object.fromEntries(G.quizzes.map(q => [q.id, q]));
+  const parentsOf = id => G.aristas.filter(a => a.a === id).map(a => a.de);
+  const childrenOf = id => G.aristas.filter(a => a.de === id).map(a => a.a);
+  const stepOfNode = {};
+  G.pasos.forEach((p, k) => { if (p.tipo === "nodo") stepOfNode[p.nodo] = k; });
+  const LAST = G.pasos.length - 1;
+  const colorOf = id => `var(--${CAP[N[id].cap].color})`;
+  const capColor = cid => `var(--${CAP[cid].color})`;
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const TRAPS = /(?<!\p{L})(únicamente|exclusiv\p{L}*|solo|sin|ignorando|restando|indiferencia|por su cuenta|por completo|limit\p{L}*|memorizar|omitir|priorizar|anul\p{L}*|reemplaz\p{L}*|sustitu\p{L}*|desaparici\p{L}*|aislad\p{L}*|aislamiento|desestim\p{L}*|abandon\p{L}*|aunque|delegar|desconfianza|obstaculiz\p{L}*)(?!\p{L})/giu;
+  const LETTERS = "ABCD";
+  const STORE = "repaso-" + (G.meta.clave || "tema");
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const S = { i: 0, open: false, answers: {}, peek: null, fresh: null };
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE) || "null");
+    if (saved && Number.isInteger(saved.i) && saved.i <= LAST) { S.i = saved.i; S.answers = saved.answers || {}; S.open = true; }
+  } catch (e) { /* almacenamiento no disponible */ }
+  const save = () => { try { localStorage.setItem(STORE, JSON.stringify({ i: S.i, answers: S.answers })); } catch (e) { /* sin almacenamiento */ } };
+
+  /* ---------- construir el SVG ---------- */
+  const svg = document.getElementById("map");
+  const gE = document.getElementById("edges"), gL = document.getElementById("labels"), gN = document.getElementById("nodes");
+  const el = (tag, attrs = {}, parent) => {
+    const e = document.createElementNS(SVGNS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  };
+
+  const nodeEls = {};
+  G.nodos.forEach(n => {
+    const g = el("g", { class: `node ${n.tipo}`, transform: `translate(${n.x - n.w / 2} ${n.y - n.h / 2})`, "data-id": n.id }, gN);
+    g.style.setProperty("--c", colorOf(n.id));
+    const ghost = el("g", { class: "ghost" }, g);
+    el("rect", { width: n.w, height: n.h, rx: 18 }, ghost);
+    const t = el("text", { x: n.w / 2, y: n.h / 2 + 10, "text-anchor": "middle" }, ghost);
+    t.textContent = "?";
+    const pop = el("g", { class: "pop" }, g);
+    el("rect", { class: "box", width: n.w, height: n.h, rx: 18 }, pop);
+    const fo = el("foreignObject", { width: n.w, height: n.h }, pop);
+    const div = document.createElement("div");
+    div.className = "nd";
+    div.innerHTML = `<b>${esc(n.titulo)}</b><span>${esc(n.corto)}</span>`;
+    fo.appendChild(div);
+    g.addEventListener("click", () => { if (g.classList.contains("on")) { S.peek = n.id; render(false); } });
+    nodeEls[n.id] = g;
+  });
+
+  const anchor = (n, side) => side === "l" ? [n.x - n.w / 2, n.y] : side === "r" ? [n.x + n.w / 2, n.y] : [n.x, n.y + n.h / 2];
+  const edgeEls = G.aristas.map(a => {
+    const s = N[a.de], t = N[a.a];
+    const [sx, sy] = anchor(s, a.desde || "b");
+    const tx = t.x, ty = t.y - t.h / 2;
+    let c1, c2;
+    if (a.desde === "l" || a.desde === "r") { c1 = [sx + (tx - sx) * 0.85, sy]; c2 = [tx, sy + (ty - sy) * 0.45]; }
+    else { const dy = ty - sy; c1 = [sx, sy + dy * 0.55]; c2 = [tx, ty - dy * 0.55]; }
+    const path = el("path", { class: "edge", d: `M${sx} ${sy} C${c1} ${c2} ${tx} ${ty}`, pathLength: 1 }, gE);
+    path.style.setProperty("--c", colorOf(a.a));
+    let label = null;
+    if (a.conector) {
+      const m = (p0, p1, p2, p3) => 0.125 * p0 + 0.375 * p1 + 0.375 * p2 + 0.125 * p3;
+      const mx = m(sx, c1[0], c2[0], tx), my = m(sy, c1[1], c2[1], ty);
+      label = el("g", { class: "elabel" }, gL);
+      label.style.setProperty("--c", colorOf(a.a));
+      const r = el("rect", { rx: 11, height: 24, y: my - 12 }, label);
+      const tx2 = el("text", { x: mx, y: my + 5, "text-anchor": "middle" }, label);
+      tx2.textContent = a.conector;
+      const w = (tx2.getComputedTextLength() || a.conector.length * 7.4) + 18;
+      r.setAttribute("width", w); r.setAttribute("x", mx - w / 2);
+    }
+    return { a, path, label };
+  });
+
+  /* ---------- cámara ---------- */
+  let cam = { x: 0, y: 0, w: 1400, h: 1100 }, camAnim = 0;
+  function fit(ids) {
+    const ns = ids.map(id => N[id]).filter(Boolean);
+    if (!ns.length) return { x: 0, y: 0, w: 1400, h: 1100 };
+    let x0 = Math.min(...ns.map(n => n.x - n.w / 2)), x1 = Math.max(...ns.map(n => n.x + n.w / 2));
+    let y0 = Math.min(...ns.map(n => n.y - n.h / 2)), y1 = Math.max(...ns.map(n => n.y + n.h / 2));
+    const pad = 64;
+    x0 -= pad; x1 += pad; y0 -= pad + 40; y1 += pad;
+    let w = Math.max(x1 - x0, 540), h = Math.max(y1 - y0, 340);
+    const r = svg.clientWidth / Math.max(svg.clientHeight, 1) || 1.4;
+    if (w / h < r) w = h * r; else h = w / r;
+    const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+    return { x: cx - w / 2, y: cy - h / 2, w, h };
+  }
+  function moveCam(target, instant) {
+    cancelAnimationFrame(camAnim);
+    const from = { ...cam }, t0 = performance.now(), dur = instant || reduced ? 0 : 750;
+    const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const step = now => {
+      const k = dur ? Math.min(1, (now - t0) / dur) : 1, e = ease(k);
+      cam = { x: from.x + (target.x - from.x) * e, y: from.y + (target.y - from.y) * e, w: from.w + (target.w - from.w) * e, h: from.h + (target.h - from.h) * e };
+      svg.setAttribute("viewBox", `${cam.x} ${cam.y} ${cam.w} ${cam.h}`);
+      if (k < 1) camAnim = requestAnimationFrame(step);
+    };
+    camAnim = requestAnimationFrame(step);
+  }
+
+  /* ---------- estado ---------- */
+  const step = () => G.pasos[S.i];
+  const isFinal = () => step().tipo === "final";
+  function revealed(id) {
+    if (isFinal()) return true;
+    const k = stepOfNode[id];
+    if (k < S.i) return true;
+    if (k === S.i) return N[id].tipo === "hoja" || !N[id].pregunta || S.open;
+    return false;
+  }
+  function chapterAt(i) {
+    for (let k = i; k >= 0; k--) { const p = G.pasos[k]; if (p.tipo === "nodo") return N[p.nodo].cap; }
+    return G.capitulos[0].id;
+  }
+  const curChap = () => step().tipo === "intro" ? G.capitulos[0].id : chapterAt(S.i);
+  const nextNodeId = () => { for (let k = S.i; k <= LAST; k++) { const p = G.pasos[k]; if (p.tipo === "nodo" && !revealed(p.nodo)) return p.nodo; } return null; };
+
+  function focusIds() {
+    if (S.peek) return [S.peek, ...parentsOf(S.peek), ...childrenOf(S.peek).filter(revealed)];
+    const p = step();
+    const ghosts = G.nodos.filter(n => n.cap === curChap() && !revealed(n.id)).map(n => n.id);
+    if (p.tipo === "intro") return [G.pasos[1].nodo, ...ghosts];
+    if (p.tipo === "final") return G.nodos.map(n => n.id);
+    if (p.tipo === "quiz") return Q[p.quiz].nodos;
+    const n = N[p.nodo];
+    if (n.tipo === "hoja") { const hub = parentsOf(n.id)[0]; return [hub, ...childrenOf(hub).filter(c => N[c].tipo === "hoja")]; }
+    return [n.id, ...parentsOf(n.id), ...ghosts];
+  }
+
+  /* ---------- pintar ---------- */
+  function paintMap() {
+    const chap = curChap(), nxt = nextNodeId();
+    const p = step();
+    const qFocus = p.tipo === "quiz" && !S.peek ? new Set(Q[p.quiz].nodos) : null;
+    G.nodos.forEach(n => {
+      const g = nodeEls[n.id], on = revealed(n.id);
+      g.classList.toggle("on", on);
+      g.classList.toggle("ghosty", !on && n.cap === chap);
+      g.classList.toggle("next", n.id === nxt);
+      g.classList.toggle("fresh", n.id === S.fresh);
+      g.classList.toggle("focus", !!qFocus && qFocus.has(n.id));
+      g.classList.toggle("dim", !!qFocus && on && !qFocus.has(n.id));
+      g.classList.toggle("peek", n.id === S.peek);
+    });
+    edgeEls.forEach(({ a, path, label }) => {
+      const on = revealed(a.de) && revealed(a.a);
+      const dim = !!qFocus && !(qFocus.has(a.de) && qFocus.has(a.a));
+      path.classList.toggle("on", on); path.classList.toggle("dim", on && dim);
+      if (label) { label.classList.toggle("on", on); label.classList.toggle("dim", on && dim); }
+    });
+  }
+
+  const ctag = document.getElementById("ctag");
+  let lastChap = null;
+  function paintHeader() {
+    const chap = isFinal() ? null : curChap();
+    const chips = document.getElementById("chips");
+    const doneIdx = G.capitulos.findIndex(c => c.id === chapterAt(S.i));
+    chips.innerHTML = G.capitulos.map((c, k) =>
+      `<span class="chip ${c.id === chap ? "now" : (isFinal() || k < doneIdx) ? "done" : ""}" role="listitem" style="--c:${capColor(c.id)}">${k + 1}. ${esc(c.titulo)}</span>`
+    ).join("") + `<span class="chip ${isFinal() ? "now" : ""}" role="listitem" style="--c:var(--gold)">Mapa completo</span>`;
+    chips.querySelector(".now")?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    document.getElementById("bar").style.width = (S.i / LAST * 100) + "%";
+    document.getElementById("brandSub").textContent = G.meta.bloque;
+    const label = isFinal() ? "Mapa completo" : CAP[chap].titulo;
+    const k = isFinal() ? "" : `Capítulo ${G.capitulos.findIndex(c => c.id === chap) + 1}`;
+    ctag.style.setProperty("--c", isFinal() ? "var(--gold)" : capColor(chap));
+    ctag.querySelector("small").textContent = k || G.meta.titulo;
+    ctag.querySelector("strong").textContent = label;
+    if (label !== lastChap) { ctag.classList.remove("swap"); void ctag.offsetWidth; ctag.classList.add("swap"); lastChap = label; }
+  }
+
+  function threadOf(id) {
+    const chain = [id];
+    let cur = id;
+    while (true) {
+      const e = G.aristas.find(a => a.a === cur && a.conector) || G.aristas.find(a => a.a === cur);
+      if (!e) break;
+      chain.unshift(e.de); cur = e.de;
+    }
+    return chain;
+  }
+  const linkOf = id => G.aristas.find(a => a.a === id && a.conector);
+
+  function nodeCard(n, extra = "") {
+    const chain = threadOf(n.id);
+    const link = linkOf(n.id);
+    return `
+      <span class="eyebrow">${esc(CAP[n.cap].titulo)}</span>
+      ${chain.length > 1 ? `<div class="thread" aria-label="Hilo">${chain.map((c, k) => `<span class="${k === chain.length - 1 ? "last" : ""}">${esc(N[c].titulo)}</span>`).join("<i>→</i>")}</div>` : ""}
+      <h2>${esc(n.titulo)}</h2>
+      <p class="sub">${esc(n.corto)}</p>
+      ${link ? `<p class="link">${esc(N[link.de].titulo)} <em>${esc(link.conector)}</em> ${esc(n.titulo)}</p>` : ""}
+      <p>${esc(n.texto)}</p>
+      ${n.ejemplo ? `<div class="example"><b>En la vida diaria</b><p>${esc(n.ejemplo)}</p></div>` : ""}
+      ${extra}`;
+  }
+
+  function quizCard(q) {
+    const ans = S.answers[q.id];
+    const done = ans !== undefined;
+    const opts = q.opciones.map((o, k) => {
+      const cls = !done ? "" : k === q.correcta ? "right" : k === ans ? "wrong" : "";
+      const txt = done ? esc(o).replace(TRAPS, "<mark>$1</mark>") : esc(o);
+      return `<button class="opt ${cls}" type="button" data-k="${k}" ${done ? "disabled" : ""}><span class="l">${LETTERS[k]})</span><span>${txt}</span></button>`;
+    }).join("");
+    const ok = ans === q.correcta;
+    const trapNote = done && opts.includes("<mark>") ? `<small>En rojo: palabras trampa. La respuesta correcta nunca las usa.</small>` : "";
+    return `
+      <span class="eyebrow">${esc(q.fuente)}</span>
+      <h2>Practique como en la prueba</h2>
+      <div class="passage"><small>Lea el siguiente texto:</small><p>${esc(q.texto)}</p></div>
+      <p class="qtext">${esc(q.pregunta)}</p>
+      <div class="opts">${opts}</div>
+      ${done ? `<div class="feedback" style="--fc:${ok ? "var(--ok)" : "var(--bad)"}"><b>${ok ? "¡Correcto!" : `La correcta es la ${LETTERS[q.correcta]}`}</b><p>${esc(q.explicacion)}</p>${trapNote}</div>`
+              : `<small style="color:var(--muted)">En el mapa se resaltan las piezas que ayudan a responder.</small>`}`;
+  }
+
+  function summaryList() {
+    const order = G.pasos.filter(p => p.tipo === "nodo").map(p => p.nodo);
+    return `<ol class="summary">${order.map(id => {
+      const l = linkOf(id);
+      return `<li>${l ? `<em>${esc(l.conector)}</em> ` : ""}<b>${esc(N[id].titulo)}</b>: ${esc(N[id].corto.toLowerCase())}</li>`;
+    }).join("")}</ol>`;
+  }
+
+  const card = document.getElementById("card");
+  const prev = document.getElementById("prev"), next = document.getElementById("next");
+  function paintPanel(animate) {
+    const p = step();
+    let html = "", c = "var(--blue)", nextLabel = "Siguiente", nextOff = false;
+    if (S.peek) {
+      const n = N[S.peek];
+      c = colorOf(n.id);
+      html = nodeCard(n, `<small style="color:var(--muted)">Está repasando una pieza. Pulse «Volver» para seguir donde iba.</small>`);
+      nextLabel = "Volver";
+    } else if (p.tipo === "intro") {
+      html = `
+        <span class="eyebrow">${esc(G.meta.bloque)}</span>
+        <h2>${esc(G.meta.titulo)}</h2>
+        <p>${esc(G.meta.afirmacion)}. El mapa se arma pieza por pieza; cada pieza nueva se conecta con la anterior.</p>
+        <ul class="steps">
+          <li><span>Lea la <b>pregunta para pensar</b> e intente responderla antes de seguir.</span></li>
+          <li><span>Pulse <b>Descubrir</b>: aparece la pieza y se dibuja su conexión.</span></li>
+          <li><span>Siga el <b>hilo</b>: cada flecha dice por qué una idea lleva a la otra.</span></li>
+          <li><span>Responda las <b>preguntas tipo MEP</b> al cerrar cada capítulo.</span></li>
+        </ul>`;
+      nextLabel = "Empezar";
+    } else if (p.tipo === "nodo") {
+      const n = N[p.nodo];
+      c = colorOf(n.id);
+      if (!revealed(n.id)) {
+        const par = parentsOf(n.id).filter(revealed);
+        html = `
+          <span class="eyebrow">${esc(CAP[n.cap].titulo)}</span>
+          <div class="think"><b>Pregunta para pensar</b><p>${esc(n.pregunta)}</p><small>Piense su respuesta y luego descubra la pieza${par.length ? ` que se conecta con «${esc(N[par[0]].titulo)}»` : ""}.</small></div>`;
+        nextLabel = "Descubrir";
+      } else {
+        html = nodeCard(n, n.pregunta ? `<div class="think" style="padding:12px 14px"><b>Usted se preguntó</b><small>${esc(n.pregunta)}</small></div>` : "");
+      }
+    } else if (p.tipo === "quiz") {
+      const q = Q[p.quiz];
+      c = capColor(chapterAt(S.i));
+      html = quizCard(q);
+      nextOff = S.answers[q.id] === undefined;
+      if (nextOff) nextLabel = "Responda para seguir";
+    } else {
+      c = "var(--gold)";
+      const total = G.quizzes.length, right = G.quizzes.filter(q => S.answers[q.id] === q.correcta).length;
+      html = `
+        <span class="eyebrow" style="color:var(--ink)">Mapa completo</span>
+        <h2>¡Armó todo el tema!</h2>
+        <div><span class="score" style="--c:${right === total ? "var(--ok)" : "var(--orange)"}">${right}/${total}</span> <span style="color:var(--muted)">preguntas tipo MEP correctas</span></div>
+        <div class="key"><b>Idea clave</b><p>${esc(G.meta.idea_clave)}</p></div>
+        <b style="font-family:var(--display);font-size:1.1rem">El hilo del tema</b>
+        ${summaryList()}
+        <small style="color:var(--muted)">Toque cualquier pieza del mapa para repasarla.</small>`;
+      nextLabel = "Repasar desde el inicio";
+    }
+    card.style.setProperty("--c", c);
+    next.style.setProperty("--c", c);
+    card.innerHTML = html;
+    if (animate) { card.classList.remove("enter"); void card.offsetWidth; card.classList.add("enter"); card.scrollTop = 0; }
+    next.textContent = nextLabel;
+    next.disabled = nextOff;
+    prev.disabled = S.i === 0 && !S.peek;
+    card.querySelectorAll(".opt").forEach(b => b.addEventListener("click", () => {
+      S.answers[step().quiz] = +b.dataset.k; save(); paintPanel(false);
+    }));
+  }
+
+  function render(animate = true, instantCam = false) {
+    paintMap(); paintHeader(); paintPanel(animate);
+    moveCam(fit(focusIds()), instantCam);
+    save();
+  }
+
+  /* ---------- navegación ---------- */
+  function goNext() {
+    if (S.peek) { S.peek = null; render(); return; }
+    const p = step();
+    if (p.tipo === "nodo" && !revealed(p.nodo)) { S.open = true; S.fresh = p.nodo; render(); return; }
+    if (p.tipo === "quiz" && S.answers[p.quiz] === undefined) return;
+    if (p.tipo === "final") { S.i = 0; S.answers = {}; S.open = false; S.fresh = null; render(); return; }
+    S.i++; S.open = false;
+    const np = step();
+    S.fresh = np.tipo === "nodo" && revealed(np.nodo) ? np.nodo : null;
+    render();
+  }
+  function goPrev() {
+    if (S.peek) { S.peek = null; render(); return; }
+    if (S.i === 0) return;
+    S.i--; S.open = true; S.fresh = null;
+    render();
+  }
+  next.addEventListener("click", goNext);
+  prev.addEventListener("click", goPrev);
+  document.addEventListener("keydown", e => {
+    if (e.target.closest && e.target.closest("input,textarea")) return;
+    if (e.key === "ArrowRight") { e.preventDefault(); if (!next.disabled) goNext(); }
+    if (e.key === "ArrowLeft") { e.preventDefault(); goPrev(); }
+  });
+  let rz = 0;
+  addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => moveCam(fit(focusIds()), true), 120); });
+
+  render(false, true);
+})();
+</script>
