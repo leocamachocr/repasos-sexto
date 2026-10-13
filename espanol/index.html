@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mapas de Español 6.º</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: portada sobre el mismo papel punteado de los mapas; ruta numerada arriba y tarjetas por bloque */
+:root{
+  --bg:#eef4f6; --board:#f8fbfc; --dot:#cfdde3; --sheet:#ffffff; --ink:#1c2a31; --muted:#586b74; --line:#d3e0e5;
+  --blue:#1f56b0; --green:#2b8a4f; --orange:#d2641b; --teal:#11808a; --purple:#6a46b6; --red:#c42a3c; --gold:#e3a51a;
+  --b1:var(--blue); --b2:var(--orange); --tint:12%;
+  --display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible",Verdana,system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e171c; --board:#111d23; --dot:#23343c; --sheet:#182730; --ink:#e5eef2; --muted:#9db1ba; --line:#2a3d46;
+  --blue:#82a9f0; --green:#6dc78f; --orange:#f09a5c; --teal:#5dc5ce; --purple:#b49ef0; --red:#f07482; --gold:#f2c552;
+  --tint:20%; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e171c; --board:#111d23; --dot:#23343c; --sheet:#182730; --ink:#e5eef2; --muted:#9db1ba; --line:#2a3d46;
+  --blue:#82a9f0; --green:#6dc78f; --orange:#f09a5c; --teal:#5dc5ce; --purple:#b49ef0; --red:#f07482; --gold:#f2c552;
+  --tint:20%; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background-color:var(--board);background-image:radial-gradient(var(--dot) 1.3px,transparent 1.4px);background-size:22px 22px;color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.1;text-wrap:balance}
+p{margin:0}
+a{color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:32px 56px;display:grid;gap:36px}
+
+header.hero{display:grid;gap:12px;max-width:760px}
+.eyebrow{font-family:var(--display);font-weight:700;font-size:.82rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.hero h1{font-size:clamp(2rem,5.5vw,3.3rem);font-weight:800;color:var(--ink)}
+.hero h1 em{font-style:normal;color:var(--blue)}
+.hero p{font-size:1.08rem;color:var(--muted);max-width:62ch}
+.how{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px;padding:0;list-style:none;counter-reset:s}
+.how li{display:flex;align-items:center;gap:8px;background:var(--sheet);border:1.5px solid var(--line);border-radius:999px;padding:5px 14px 5px 6px;font-size:.92rem;counter-increment:s}
+.how li::before{content:counter(s);width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--blue);color:var(--sheet);font-family:var(--display);font-weight:700;font-size:.85rem}
+
+/* Ruta */
+.route{background:var(--sheet);border:1.5px solid var(--line);border-radius:20px;padding:18px 20px;display:grid;gap:12px}
+.route-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px}
+.route-head h2{font-size:1.3rem}
+.route-head span{font-family:var(--display);font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.stops{display:flex;flex-wrap:wrap;gap:6px 0;align-items:center;padding:0;margin:0;list-style:none}
+.stops li{display:flex;align-items:center}
+.stops li:not(:last-child)::after{content:"";width:18px;height:3px;background:var(--line);border-radius:2px}
+.stops li.done:not(:last-child)::after{background:var(--c)}
+.stops li.gap::after{width:30px;background:repeating-linear-gradient(90deg,var(--line) 0 5px,transparent 5px 9px)}
+.stop{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:.95rem;text-decoration:none;color:var(--c);border:2.5px solid var(--c);background:var(--sheet);font-variant-numeric:tabular-nums;transition:transform .15s}
+.stop:hover{transform:scale(1.08)}
+.stop:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+li.done .stop{background:var(--c);color:var(--sheet)}
+.bar{height:8px;border-radius:999px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--orange),var(--green),var(--purple));transition:width .4s}
+
+/* Bloques y tarjetas */
+section.block{display:grid;gap:16px}
+.block-head{display:grid;gap:4px;border-left:6px solid var(--c);padding-left:14px}
+.block-head h2{font-size:clamp(1.5rem,3.6vw,2rem);color:var(--c)}
+.block-head p{color:var(--muted)}
+.cards{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.card{background:var(--sheet);border:2px solid var(--line);border-radius:18px;padding:16px 18px 14px;display:grid;gap:10px;align-content:start;min-width:0;position:relative;scroll-margin-top:16px;transition:border-color .2s,box-shadow .2s}
+.card:hover{border-color:color-mix(in srgb,var(--c) 55%,var(--line))}
+.card.done{border-color:var(--c);background:color-mix(in srgb,var(--c) 6%,var(--sheet))}
+.card:target{box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 35%,transparent)}
+.card-top{display:flex;align-items:flex-start;gap:12px}
+.num{font-family:var(--display);font-weight:800;font-size:2.4rem;line-height:.9;color:var(--c);font-variant-numeric:tabular-nums;flex:none}
+.card-top div{display:grid;gap:2px;min-width:0}
+.card .tag{font-family:var(--display);font-weight:700;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.card h3{font-size:1.3rem}
+.idea{color:var(--muted);font-size:.93rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.chapters{display:flex;gap:4px}
+.chapters span{flex:1;height:6px;border-radius:3px;background:var(--k)}
+.facts{font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.actions{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.open{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-family:var(--display);font-weight:700;font-size:1.02rem;background:var(--c);color:var(--sheet);padding:7px 16px;border-radius:12px}
+.open:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.check{display:inline-flex;align-items:center;gap:7px;font-size:.9rem;color:var(--muted);cursor:pointer;user-select:none}
+.check input{width:18px;height:18px;accent-color:var(--c);cursor:pointer}
+
+.back{font-family:var(--display);font-weight:700;color:var(--blue);text-decoration:none;justify-self:start}
+.back:hover{text-decoration:underline}
+.note{background:var(--sheet);border:1.5px dashed var(--line);border-radius:16px;padding:14px 18px;color:var(--muted);font-size:.93rem;display:grid;gap:4px}
+.note b{font-family:var(--display);color:var(--ink);font-size:1.02rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <a class="back" id="back" hidden></a>
+    <span class="eyebrow" id="sub"></span>
+    <h1 id="h1"></h1>
+    <p id="lead"></p>
+    <ul class="how">
+      <li>Elija un tema en orden</li>
+      <li>Piense antes de descubrir cada pieza</li>
+      <li>Responda las preguntas tipo examen</li>
+      <li>Marque el tema como repasado</li>
+    </ul>
+  </header>
+
+  <nav class="route" aria-label="Ruta de repaso">
+    <div class="route-head"><h2>Su ruta</h2><span id="count"></span></div>
+    <ol class="stops" id="stops"></ol>
+    <div class="bar"><i id="bar"></i></div>
+  </nav>
+
+  <div id="blocks" style="display:grid;gap:36px"></div>
+
+  <div class="note" id="note"></div>
+</div>
+
+<script type="application/json" id="datos">{
+ "titulo": "Mapas para repasar <em>comprensión lectora<\/em>",
+ "subtitulo": "Prueba Nacional Estandarizada Sumativa 2026 · Comprensión lectora",
+ "descripcion": "Cada mapa arma un tema pieza por pieza: primero una pregunta para pensar, después la pieza y su conexión con la anterior, y al cerrar cada capítulo una pregunta tipo examen.",
+ "nota": "La prueba de producción de texto escrito tiene su propio marco de especificaciones y no forma parte de estos mapas.",
+ "volver": {
+  "texto": "Todas las materias",
+  "href": "../"
+ },
+ "nombresBloque": {
+  "Estrategia general": "Cómo leer antes de responder",
+  "Textos no literarios": "Ideas y relaciones de causa y efecto",
+  "Textos literarios": "Temas y personajes"
+ },
+ "temas": [
+  {
+   "clave": "t01",
+   "titulo": "Cómo leer para responder la prueba",
+   "bloque": "Estrategia general",
+   "afirmacionCorta": "Antes de empezar",
+   "idea": "Para acertar en la prueba hay que leer el texto completo, saber de qué trata, buscar la pista que pide la pregunta y comprobar cada opción contra el texto. Las trampas más comunes son datos verdaderos que no responden, medias verdades y cosas que el texto no dice.",
+   "nodos": 17,
+   "capitulos": 4,
+   "preguntas": 4,
+   "oficiales": 3,
+   "colores": [
+    "blue",
+    "green",
+    "orange",
+    "red"
+   ],
+   "html": "t01-como-leer.html",
+   "url": ""
+  },
+  {
+   "clave": "t02",
+   "titulo": "Ideas fundamentales en textos no literarios",
+   "bloque": "Textos no literarios",
+   "afirmacionCorta": "Afirmación 1",
+   "idea": "La idea fundamental es la que resume todo el mensaje del texto. Se encuentra leyendo todo, buscando lo que se repite y resumiendo con palabras propias; los detalles ciertos y las verdades a medias son las trampas más comunes.",
+   "nodos": 17,
+   "capitulos": 4,
+   "preguntas": 4,
+   "oficiales": 3,
+   "colores": [
+    "blue",
+    "green",
+    "orange",
+    "red"
+   ],
+   "html": "t02-ideas-fundamentales.html",
+   "url": ""
+  },
+  {
+   "clave": "t03",
+   "titulo": "Ideas complementarias en textos no literarios",
+   "bloque": "Textos no literarios",
+   "afirmacionCorta": "Afirmación 2",
+   "idea": "La idea fundamental dice lo más importante; las complementarias añaden detalles, ejemplos y datos que la explican. Primero ubique la fundamental y luego busque lo que la amplía, casi siempre en el medio o al final del texto.",
+   "nodos": 17,
+   "capitulos": 4,
+   "preguntas": 4,
+   "oficiales": 1,
+   "colores": [
+    "blue",
+    "green",
+    "orange",
+    "red"
+   ],
+   "html": "t03-ideas-complementarias.html",
+   "url": ""
+  },
+  {
+   "clave": "t04",
+   "titulo": "Relaciones de causa en textos no literarios",
+   "bloque": "Textos no literarios",
+   "afirmacionCorta": "Afirmación 3",
+   "idea": "La causa es el motivo por el que ocurre un hecho. Se encuentra preguntando «¿por qué pasó?» y buscando expresiones como porque, pues, debido a, se debe a o por lo que; la trampa es elegir un dato cierto que no es el porqué.",
+   "nodos": 17,
+   "capitulos": 4,
+   "preguntas": 4,
+   "oficiales": 4,
+   "colores": [
+    "blue",
+    "green",
+    "orange",
+    "red"
+   ],
+   "html": "t04-relaciones-de-causa.html",
+   "url": ""
+  },
+  {
+   "clave": "t05",
+   "titulo": "Relaciones de efecto en textos no literarios",
+   "bloque": "Textos no literarios",
+   "afirmacionCorta": "Afirmación 4",
+   "idea": "El efecto es lo que ocurre como resultado de una causa. Se encuentra preguntando «¿qué pasó después?»; a menudo el texto no trae conector y lo anuncia con verbos como potencia, trae, aumenta o con «si… puede».",
+   "nodos": 17,
+   "capitulos": 4,
+   "preguntas": 4,
+   "oficiales": 4,
+   "colores": [
+    "blue",
+    "green",
+    "orange",
+    "red"
+   ],
+   "html": "t05-relaciones-de-efecto.html",
+   "url": ""
+  },
+  {
+   "clave": "t06",
+   "titulo": "Temas en textos literarios",
+   "bloque": "Textos literarios",
+   "afirmacionCorta": "Afirmación 5",
+   "idea": "El tema es la idea central de la historia: de qué trata en el fondo. Se descubre escogiendo las ideas importantes y relacionando personajes, acciones y hechos, y no el detalle más llamativo.",
+   "nodos": 17,
+   "capitulos": 4,
+   "preguntas": 4,
+   "oficiales": 4,
+   "colores": [
+    "blue",
+    "green",
+    "orange",
+    "red"
+   ],
+   "html": "t06-temas.html",
+   "url": ""
+  },
+  {
+   "clave": "t07",
+   "titulo": "Pensamientos de los personajes",
+   "bloque": "Textos literarios",
+   "afirmacionCorta": "Afirmación 6",
+   "idea": "El pensamiento es la idea, opinión o reflexión del personaje. Se deduce de sus palabras y acciones, no de lo que usted piensa; en el examen suele ser una idea general sobre la vida o las personas.",
+   "nodos": 17,
+   "capitulos": 4,
+   "preguntas": 4,
+   "oficiales": 4,
+   "colores": [
+    "blue",
+    "green",
+    "orange",
+    "red"
+   ],
+   "html": "t07-pensamientos.html",
+   "url": ""
+  },
+  {
+   "clave": "t08",
+   "titulo": "Conflictos de los personajes",
+   "bloque": "Textos literarios",
+   "afirmacionCorta": "Afirmación 7",
+   "idea": "El conflicto es el problema que enfrenta el personaje: lo que genera tensión y mueve la historia. Se reconoce leyendo toda la historia, porque suele estar en el momento más fuerte o al final; hay que separarlo de sus causas y de los detalles.",
+   "nodos": 17,
+   "capitulos": 4,
+   "preguntas": 4,
+   "oficiales": 4,
+   "colores": [
+    "blue",
+    "green",
+    "orange",
+    "red"
+   ],
+   "html": "t08-conflictos.html",
+   "url": ""
+  },
+  {
+   "clave": "t09",
+   "titulo": "Comportamientos de los personajes",
+   "bloque": "Textos literarios",
+   "afirmacionCorta": "Afirmación 8",
+   "idea": "El comportamiento es la manera en que el personaje actúa. Se identifica observando lo que hace, dice y cómo reacciona según el contexto, y comprobando que el adjetivo de la opción y su explicación coincidan con el texto.",
+   "nodos": 17,
+   "capitulos": 4,
+   "preguntas": 4,
+   "oficiales": 4,
+   "colores": [
+    "blue",
+    "green",
+    "orange",
+    "red"
+   ],
+   "html": "t09-comportamientos.html",
+   "url": ""
+  }
+ ]
+}</script>
+<script>
+(() => {
+  const D = JSON.parse(document.getElementById("datos").textContent);
+  const local = location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+  const KEY = "portada-repasos";
+  let done = {};
+  try { done = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { done = {}; }
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) { /* sin almacenamiento */ } };
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  document.getElementById("sub").textContent = D.subtitulo;
+  if (D.volver) { const b = document.getElementById("back"); b.href = D.volver.href; b.textContent = "← " + D.volver.texto; b.hidden = false; }
+  document.getElementById("h1").innerHTML = D.titulo;
+  document.getElementById("lead").textContent = D.descripcion;
+  document.getElementById("note").innerHTML = D.nota ? `<b>Fuera de esta ruta</b><span>${esc(D.nota)}</span>` : "";
+  if (!D.nota) document.getElementById("note").hidden = true;
+
+  const groups = [];
+  D.temas.forEach(t => {
+    let g = groups.find(x => x.bloque === t.bloque);
+    if (!g) groups.push(g = { bloque: t.bloque, temas: [] });
+    g.temas.push(t);
+  });
+  const blockColor = i => ["var(--blue)", "var(--orange)", "var(--green)", "var(--purple)", "var(--teal)", "var(--red)"][i % 6];
+  const hrefOf = t => (!local && t.url) ? t.url : t.html;
+
+  document.getElementById("blocks").innerHTML = groups.map((g, gi) => `
+    <section class="block" style="--c:${blockColor(gi)}">
+      <div class="block-head"><span class="eyebrow">${esc(g.bloque)}</span><h2>${esc(D.nombresBloque[g.bloque] || g.bloque)}</h2>
+        <p>${g.temas.length} mapas · ${g.temas.reduce((s, t) => s + t.nodos, 0)} piezas · ${g.temas.reduce((s, t) => s + t.preguntas, 0)} preguntas</p></div>
+      <div class="cards">${g.temas.map(t => `
+        <article class="card" id="${t.clave}">
+          <div class="card-top"><span class="num">${t.clave.slice(1)}</span>
+            <div><span class="tag">${esc(t.afirmacionCorta)}</span><h3>${esc(t.titulo)}</h3></div></div>
+          <div class="chapters" aria-hidden="true">${t.colores.map(c => `<span style="--k:var(--${c})"></span>`).join("")}</div>
+          <p class="idea">${esc(t.idea)}</p>
+          <p class="facts">${t.nodos} piezas · ${t.capitulos} capítulos · ${t.preguntas} preguntas (${t.oficiales} oficiales)</p>
+          <div class="actions">
+            <a class="open" href="${esc(hrefOf(t))}" ${!local && t.url ? 'target="_blank" rel="noopener"' : ""}>Abrir mapa →</a>
+            <label class="check"><input type="checkbox" id="chk-${t.clave}" data-k="${t.clave}"> Ya lo repasé</label>
+          </div>
+        </article>`).join("")}
+      </div>
+    </section>`).join("");
+
+  function paint() {
+    const total = D.temas.length, n = D.temas.filter(t => done[t.clave]).length;
+    document.getElementById("count").textContent = `${n} de ${total} repasados`;
+    document.getElementById("bar").style.width = (n / total * 100) + "%";
+    document.getElementById("stops").innerHTML = D.temas.map((t, i) => {
+      const gi = groups.findIndex(g => g.bloque === t.bloque);
+      const next = D.temas[i + 1];
+      const gap = next && next.bloque !== t.bloque;
+      return `<li class="${done[t.clave] ? "done" : ""} ${gap ? "gap" : ""}" style="--c:${blockColor(gi)}"><a class="stop" href="#${t.clave}" title="${esc(t.titulo)}">${t.clave.slice(1)}</a></li>`;
+    }).join("");
+    D.temas.forEach(t => {
+      document.getElementById(t.clave).classList.toggle("done", !!done[t.clave]);
+      document.getElementById("chk-" + t.clave).checked = !!done[t.clave];
+    });
+  }
+  document.querySelectorAll(".check input").forEach(cb => cb.addEventListener("change", () => {
+    done[cb.dataset.k] = cb.checked; save(); paint();
+  }));
+  paint();
+})();
+</script>
